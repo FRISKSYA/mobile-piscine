@@ -2,7 +2,7 @@ services:
   flutter:
     build: .
     volumes:
-      - .:/app
+      - .:/home/flutter_user/app
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - DISPLAY=${DISPLAY}
