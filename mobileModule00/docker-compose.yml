@@ -1,0 +1,12 @@
+services:
+  flutter:
+    build: .
+    volumes:
+      - .:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=${DISPLAY}
+    network_mode: host
+    command: /bin/bash
+    tty: true
+    stdin_open: true
