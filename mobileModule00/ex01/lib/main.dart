@@ -52,18 +52,29 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              _showHelloworld ? 'Hello World!' : 'this is a text.',
-              style: Theme.of(context).textTheme.headlineMedium,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade100,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                _showHelloworld ? 'Hello World!' : 'this is a text.',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ),
+            const SizedBox(height: 20),  // 間隔を調整
+            ElevatedButton(
+              onPressed: _toggleText,
+              style: ElevatedButton.styleFrom(
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(16),
+              ),
+              child: const Icon(Icons.swap_horiz),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _toggleText,
-        tooltip: 'Toggle text',
-        child: const Icon(Icons.swap_horiz),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
