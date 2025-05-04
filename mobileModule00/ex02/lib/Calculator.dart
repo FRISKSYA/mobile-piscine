@@ -28,7 +28,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
           // 表示部分
           CalculatorDisplay(expression: expression, result: result),
           // キーパッド部分
-          Expanded(flex: 5, child: CalculatorKeypad(onKeyPressed: handleKeyPress)),
+          Expanded(flex: 7, child: CalculatorKeypad(onKeyPressed: handleKeyPress)),
         ],
       ),
     );
@@ -110,64 +110,43 @@ class CalculatorKeypad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-    
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: isLandscape
-            ? _buildLandscapeLayout()
-            : Column(
-                children: [
-                  Expanded(child: _buildButtonRow(['7', '8', '9', 'AC', 'C'])),
-                  Expanded(child: _buildButtonRow(['4', '5', '6', '+', '-'])),
-                  Expanded(child: _buildButtonRow(['1', '2', '3', '/', '*'])),
-                  Expanded(child: _buildButtonRow(['0', '.', '00', '=', ''])),
-                ],
-              ),
-      ),
-    );
-  }
-
-  // 横向きレイアウト - 同じボタンを異なる行数で配置
-  Widget _buildLandscapeLayout() {
-    // 例：6列×3行で配置
-    return Column(
+    return GridView.count(
+      crossAxisCount: 4,
+      childAspectRatio: 1.3,
+      padding: const EdgeInsets.all(8),
+      mainAxisSpacing: 4,
+      crossAxisSpacing: 5,
       children: [
-        Expanded(child: _buildButtonRow(['7', '8', '9', '4', '5', '6'])),
-        Expanded(child: _buildButtonRow(['1', '2', '3', '0', '.', '00'])),
-        Expanded(child: _buildButtonRow(['AC', 'C', '+', '-', '/', '*', '=', ''])),
+        // 1行目: AC, C, /, *
+        CalculatorButton(text: 'AC', onPressed: () => onKeyPressed('AC'), backgroundColor: Colors.redAccent[100]!),
+        CalculatorButton(text: 'C', onPressed: () => onKeyPressed('C'), backgroundColor: Colors.orange[200]!),
+        CalculatorButton(text: '/', onPressed: () => onKeyPressed('/'), backgroundColor: Colors.blueAccent[100]!),
+        CalculatorButton(text: '*', onPressed: () => onKeyPressed('*'), backgroundColor: Colors.blueAccent[100]!),
+        
+        // 2行目: 7, 8, 9, -
+        CalculatorButton(text: '7', onPressed: () => onKeyPressed('7')),
+        CalculatorButton(text: '8', onPressed: () => onKeyPressed('8')),
+        CalculatorButton(text: '9', onPressed: () => onKeyPressed('9')),
+        CalculatorButton(text: '-', onPressed: () => onKeyPressed('-'), backgroundColor: Colors.blueAccent[100]!),
+        
+        // 3行目: 4, 5, 6, +
+        CalculatorButton(text: '4', onPressed: () => onKeyPressed('4')),
+        CalculatorButton(text: '5', onPressed: () => onKeyPressed('5')),
+        CalculatorButton(text: '6', onPressed: () => onKeyPressed('6')),
+        CalculatorButton(text: '+', onPressed: () => onKeyPressed('+'), backgroundColor: Colors.blueAccent[100]!),
+        
+        // 4行目: 1, 2, 3, =
+        CalculatorButton(text: '1', onPressed: () => onKeyPressed('1')),
+        CalculatorButton(text: '2', onPressed: () => onKeyPressed('2')),
+        CalculatorButton(text: '3', onPressed: () => onKeyPressed('3')),
+        CalculatorButton(text: '=', onPressed: () => onKeyPressed('='), backgroundColor: Colors.greenAccent[200]!),
+        
+        // 5行目: 0, ., 空白, 空白
+        CalculatorButton(text: '0', onPressed: () => onKeyPressed('0'), backgroundColor: Colors.white),
+        CalculatorButton(text: '.', onPressed: () => onKeyPressed('.'), backgroundColor: Colors.white),
+        CalculatorButton(text: '00', onPressed: () => onKeyPressed('00'), backgroundColor: Colors.white),
+        // 残りは空白またはボタンなし
       ],
-    );
-  }
-
-  Widget _buildButtonRow(List<String> buttons) {
-    return Row(
-      children: buttons.map((buttonText) {
-        if (buttonText.isEmpty) {
-          return const Expanded(child: SizedBox());
-        }
-        
-        Color backgroundColor;
-        if (['AC', 'C'].contains(buttonText)) {
-          backgroundColor = Colors.redAccent[100]!;
-        } else if (['+', '-', '*', '/', '='].contains(buttonText)) {
-          backgroundColor = Colors.blueAccent[100]!;
-        } else {
-          backgroundColor = Colors.white;
-        }
-        
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: CalculatorButton(
-              text: buttonText,
-              onPressed: () => onKeyPressed(buttonText),
-              backgroundColor: backgroundColor,
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }
