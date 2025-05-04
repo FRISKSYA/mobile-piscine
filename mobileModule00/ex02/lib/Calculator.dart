@@ -110,13 +110,64 @@ class CalculatorKeypad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ここに将来的にボタンのグリッドを実装
-    return Container(
-      padding: const EdgeInsets.all(8),
-      color: Colors.grey.shade100,
-      child: const Center(
-        child: Text('キーパッド部分（実装予定）'),
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: isLandscape
+            ? _buildLandscapeLayout()
+            : Column(
+                children: [
+                  Expanded(child: _buildButtonRow(['7', '8', '9', 'AC', 'C'])),
+                  Expanded(child: _buildButtonRow(['4', '5', '6', '+', '-'])),
+                  Expanded(child: _buildButtonRow(['1', '2', '3', '/', '*'])),
+                  Expanded(child: _buildButtonRow(['0', '.', '00', '=', ''])),
+                ],
+              ),
       ),
+    );
+  }
+
+  // 横向きレイアウト - 同じボタンを異なる行数で配置
+  Widget _buildLandscapeLayout() {
+    // 例：6列×3行で配置
+    return Column(
+      children: [
+        Expanded(child: _buildButtonRow(['7', '8', '9', '4', '5', '6'])),
+        Expanded(child: _buildButtonRow(['1', '2', '3', '0', '.', '00'])),
+        Expanded(child: _buildButtonRow(['AC', 'C', '+', '-', '/', '*', '=', ''])),
+      ],
+    );
+  }
+
+  Widget _buildButtonRow(List<String> buttons) {
+    return Row(
+      children: buttons.map((buttonText) {
+        if (buttonText.isEmpty) {
+          return const Expanded(child: SizedBox());
+        }
+        
+        Color backgroundColor;
+        if (['AC', 'C'].contains(buttonText)) {
+          backgroundColor = Colors.redAccent[100]!;
+        } else if (['+', '-', '*', '/', '='].contains(buttonText)) {
+          backgroundColor = Colors.blueAccent[100]!;
+        } else {
+          backgroundColor = Colors.white;
+        }
+        
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: CalculatorButton(
+              text: buttonText,
+              onPressed: () => onKeyPressed(buttonText),
+              backgroundColor: backgroundColor,
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
