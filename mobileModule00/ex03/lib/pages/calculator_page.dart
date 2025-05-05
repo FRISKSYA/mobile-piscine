@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 import '../widgets/calculator_display.dart';
 import '../widgets/calculator_keypad.dart';
+import '../utils/calculator_engine.dart';
 
 class CalculatorPage extends StatefulWidget {
   const CalculatorPage({super.key});
@@ -151,100 +151,15 @@ class _CalculatorPageState extends State<CalculatorPage> {
         }
       }
       
-      // 式を評価
-      final evaluated = _evaluateExpression(evaluableExpression);
+      // CalculatorEngineを使用して式を評価
+      final evaluated = CalculatorEngine.evaluate(evaluableExpression);
       
       // 結果を表示用にフォーマット
-      result = _formatResult(evaluated);
+      result = CalculatorEngine.formatResult(evaluated);
       hasCalculated = true;
     } catch (e) {
       result = 'Error';
     }
-  }
-
-  double _evaluateExpression(String expr) {
-    // 簡易的な計算式の評価
-    // 実際の実装ではより堅牢な方法を使うべき
-    
-    // 複数の演算子を含む式を分解するためのヘルパー関数
-    List<String> tokenize(String expression) {
-      List<String> tokens = [];
-      String current = '';
-      
-      for (int i = 0; i < expression.length; i++) {
-        String char = expression[i];
-        if (char == '+' || char == '-' || char == '*' || char == '/') {
-          if (current.isNotEmpty) {
-            tokens.add(current);
-            current = '';
-          }
-          tokens.add(char);
-        } else {
-          current += char;
-        }
-      }
-      
-      if (current.isNotEmpty) {
-        tokens.add(current);
-      }
-      
-      return tokens;
-    }
-    
-    // 式をトークンに分解
-    List<String> tokens = tokenize(expr);
-    
-    // 乗算と除算を先に処理
-    for (int i = 1; i < tokens.length - 1; i += 2) {
-      if (tokens[i] == '*' || tokens[i] == '/') {
-        double left = double.parse(tokens[i - 1]);
-        double right = double.parse(tokens[i + 1]);
-        double result;
-        
-        if (tokens[i] == '*') {
-          result = left * right;
-        } else {
-          if (right == 0) throw Exception('Division by zero');
-          result = left / right;
-        }
-        
-        tokens[i - 1] = result.toString();
-        tokens.removeAt(i);
-        tokens.removeAt(i);
-        i -= 2;
-      }
-    }
-    
-    // 加算と減算を処理
-    double result = double.parse(tokens[0]);
-    for (int i = 1; i < tokens.length - 1; i += 2) {
-      double right = double.parse(tokens[i + 1]);
-      
-      if (tokens[i] == '+') {
-        result += right;
-      } else if (tokens[i] == '-') {
-        result -= right;
-      }
-    }
-    
-    return result;
-  }
-
-  String _formatResult(double value) {
-    // 整数の場合は小数点以下を表示しない
-    if (value == value.truncate()) {
-      return value.truncate().toString();
-    }
-    
-    // 小数点以下の桁数を制限
-    String result = value.toString();
-    
-    // 小数点以下が9桁以上あれば、科学的表記法を使用
-    if (result.contains('.') && result.split('.')[1].length > 8) {
-      return value.toStringAsExponential(8);
-    }
-    
-    return result;
   }
 
   @override
