@@ -20,6 +20,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   
   // Mock weather data (to be replaced with actual API data)
   late WeatherData _weatherData;
+  
+  // Current location text to display
+  String _currentLocation = '';
+  bool _isUsingGeolocation = false;
 
   @override
   void initState() {
@@ -40,7 +44,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   void _onLocationPressed() {
-    // This will be implemented to get current location
+    // Set the current location to "Geolocation"
+    setState(() {
+      _currentLocation = 'Geolocation';
+      _isUsingGeolocation = true;
+    });
+    
+    // Show a snackbar to indicate that we're getting the current location
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Getting current location...')),
     );
@@ -49,13 +59,56 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void _onSearchSubmitted(String location) {
     if (location.isEmpty) return;
     
-    // This will be implemented to search for weather at the specified location
+    setState(() {
+      _currentLocation = location;
+      _isUsingGeolocation = false;
+    });
+    
+    // Show a snackbar to indicate that we're searching for the weather
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Searching for weather in $location...')),
     );
     
     // Clear the search field
     _searchController.clear();
+  }
+
+  /// Creates a subtitle text for a tab based on the current location
+  String _getTabSubtitle(String tabName) {
+    return _currentLocation.isEmpty 
+        ? 'This is the $tabName tab content'
+        : _currentLocation;
+  }
+
+  /// Creates a tab content widget for the given tab name
+  TabContent _buildTabContent(String tabName, IconData icon) {
+    return TabContent(
+      tabName: tabName,
+      icon: icon,
+      title: '$tabName Tab',
+      subtitle: _getTabSubtitle(tabName),
+    );
+  }
+
+  /// Builds all tab content widgets
+  List<Widget> _buildTabContents() {
+    return [
+      // Currently tab content
+      _buildTabContent(
+        AppConstants.currentlyTabName, 
+        Icons.access_time
+      ),
+      // Today tab content
+      _buildTabContent(
+        AppConstants.todayTabName, 
+        Icons.today
+      ),
+      // Weekly tab content
+      _buildTabContent(
+        AppConstants.weeklyTabName, 
+        Icons.calendar_view_week
+      ),
+    ];
   }
 
   @override
@@ -71,29 +124,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       body: SafeArea(
         child: TabBarView(
           controller: _tabController,
-          children: [
-            // Currently tab content
-            TabContent(
-              tabName: AppConstants.currentlyTabName,
-              icon: Icons.access_time,
-              title: '${AppConstants.currentlyTabName} Tab',
-              subtitle: 'This is the ${AppConstants.currentlyTabName} tab content',
-            ),
-            // Today tab content
-            TabContent(
-              tabName: AppConstants.todayTabName,
-              icon: Icons.today,
-              title: '${AppConstants.todayTabName} Tab',
-              subtitle: 'This is the ${AppConstants.todayTabName} tab content',
-            ),
-            // Weekly tab content
-            TabContent(
-              tabName: AppConstants.weeklyTabName,
-              icon: Icons.calendar_view_week,
-              title: '${AppConstants.weeklyTabName} Tab',
-              subtitle: 'This is the ${AppConstants.weeklyTabName} tab content',
-            ),
-          ],
+          children: _buildTabContents(),
         ),
       ),
       bottomNavigationBar: WeatherTabBar(controller: _tabController),
