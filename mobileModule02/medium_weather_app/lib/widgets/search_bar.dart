@@ -6,12 +6,18 @@ class WeatherSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onLocationPressed;
   final ValueChanged<String>? onSubmitted;
+  final ValueChanged<String>? onChanged;
+  final bool isSearching;
+  final VoidCallback? onClearSearch;
 
   const WeatherSearchBar({
     super.key,
     required this.controller,
     required this.onLocationPressed,
     this.onSubmitted,
+    this.onChanged,
+    this.isSearching = false,
+    this.onClearSearch,
   });
 
   @override
@@ -33,10 +39,23 @@ class WeatherSearchBar extends StatelessWidget {
                 vertical: isSmallScreen ? 6 : 8,
               ),
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: controller.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        controller.clear();
+                        if (onClearSearch != null) {
+                          onClearSearch!();
+                        }
+                      },
+                    )
+                  : null,
               filled: true,
               fillColor: Colors.white.withAlpha(229), // 0.9 * 255 = 229
             ),
             onSubmitted: onSubmitted,
+            onChanged: onChanged,
+            textInputAction: TextInputAction.search,
           ),
         ),
         const SizedBox(width: 8),

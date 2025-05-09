@@ -6,9 +6,18 @@
 
 このWeather Appは以下の機能を提供します：
 
-1. **検索機能**: トップバーの検索フィールドに場所を入力することで、その場所の情報を表示できます。
+1. **検索機能**: トップバーの検索フィールドに場所を入力することで、その場所の情報を表示できます。都市名を入力すると候補リストが表示され、選択できます。
 2. **位置情報機能**: トップバーの位置情報ボタンをクリックすることで、現在地の情報を取得できます。
 3. **タブ表示**: 「Currently（現在）」「Today（今日）」「Weekly（週間）」の3つのタブで異なる時間軸の天気情報を表示します。
+
+## 新機能：都市名検索と候補表示
+
+Open-MeteoのジオコーディングAPIを使用して、以下の機能を実装しました：
+
+1. **都市名検索**: 都市名、国、地域などの入力に基づいて、一致する場所のリストを表示
+2. **検索結果表示**: 各結果に都市名、地域（admin1）、国名を表示
+3. **リアルタイム候補表示**: 入力中にリアルタイムで候補が更新される
+4. **都市選択機能**: 候補リストから特定の都市を選択できる
 
 ## ディレクトリ構造
 
@@ -16,10 +25,15 @@
 lib/
 ├── config/             # アプリ設定・定数・テーマ
 ├── models/             # データモデル
+│   └── geocoding/      # ジオコーディングAPI用モデル
 ├── screens/            # 画面
 ├── services/           # API・バックエンドサービス
+│   ├── location_service.dart     # 位置情報サービス
+│   └── geocoding_service.dart    # ジオコーディングAPIサービス
 ├── utils/              # ユーティリティ関数 (将来の拡張用)
 ├── widgets/            # 再利用可能なウィジェット
+│   ├── location_search_results.dart  # 検索結果ウィジェット
+│   └── search_bar.dart              # 検索バーウィジェット
 └── main.dart           # アプリケーションのエントリーポイント
 ```
 
@@ -261,6 +275,72 @@ Widget _buildSubtitle(BuildContext context) {
 5. **ユニットテストの追加**: 各コンポーネントの動作を検証するためのテストコードの追加。
 6. **パフォーマンス最適化**: 大量のデータを扱う場合のパフォーマンス向上のための最適化。
 
+## 新機能の詳細：Open-Meteo APIによる都市検索
+
+### Open-Meteo ジオコーディングAPI
+
+このアプリでは、Open-Meteoが提供する無料のジオコーディングAPIを使用して都市名から位置情報を取得しています：
+
+- API URL: `https://geocoding-api.open-meteo.com/v1/search`
+- パラメータ:
+  - `name`: 検索する場所の名前
+  - `count`: 返す結果の最大数
+  - `language`: 結果の言語
+  - `format`: レスポンス形式 (json)
+
+### 実装のポイント
+
+1. **デバウンス処理**: 検索入力中のAPI呼び出し頻度を制限
+   ```dart
+   if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
+   _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+     _searchLocation(_searchController.text);
+   });
+   ```
+
+2. **検索結果モデル**: APIレスポンスを整理するモデルクラス
+   ```dart
+   class Location {
+     final String name;
+     final double latitude;
+     final double longitude;
+     final String? country;
+     final String? admin1; // 都道府県・州など
+     // ...
+   }
+   ```
+
+3. **非同期処理**: APIリクエストの非同期処理
+   ```dart
+   Future<void> _searchLocation(String query) async {
+     // ...
+     try {
+       final response = await GeocodingService.searchLocation(query: query);
+       setState(() {
+         _searchResults = response.results;
+         // ...
+       });
+     } catch (e) {
+       // エラー処理
+     }
+   }
+   ```
+
+4. **UIのレイヤー構造**: 検索結果リストを適切に表示
+   ```dart
+   Stack(
+     children: [
+       // メインコンテンツ
+       // ...
+       // 検索結果オーバーレイ
+       if (_showSearchResults && (_searchResults.isNotEmpty || _isSearching))
+         Positioned(
+           // 検索結果ウィジェット
+         ),
+     ],
+   )
+   ```
+
 ## まとめ
 
-Weather Appは、モジュール化された設計とクリーンなコード構造を持つFlutterアプリケーションです。責任の分離とヘルパーメソッドの活用により、コードの可読性と保守性が高められています。このアプローチにより、将来的な機能追加や変更が容易になります。
+Weather Appは、モジュール化された設計とクリーンなコード構造を持つFlutterアプリケーションです。責任の分離とヘルパーメソッドの活用により、コードの可読性と保守性が高められています。最新の追加では、Open-MeteoのジオコーディングAPIを統合して都市検索機能を実装し、ユーザーエクスペリエンスを向上させました。このアプローチにより、将来的な機能追加や変更が容易になります。

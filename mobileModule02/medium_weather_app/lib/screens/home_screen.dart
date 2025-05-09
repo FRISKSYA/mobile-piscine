@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 import '../config/constants.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/weather_tab_bar.dart';
 import '../widgets/tab_content.dart';
+import '../widgets/location_search_results.dart';
 import '../models/weather.dart';
 import '../models/forecast.dart';
+import '../models/geocoding/location.dart';
 import '../services/location_service.dart';
+import '../services/geocoding_service.dart';
 
 /// Main home screen with tabs
 class HomePage extends StatefulWidget {
@@ -20,10 +24,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   final LocationService _locationService = LocationService();
-  
+
   // Mock weather data (to be replaced with actual API data)
   late WeatherData _weatherData;
-  
+
   // Current location text to display
   String _currentLocation = '';
   bool _isUsingGeolocation = false;
@@ -31,20 +35,29 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   bool _isLoadingLocation = false;
   bool _locationPermissionDenied = false;
 
+  // Search results
+  List<Location> _searchResults = [];
+  bool _isSearching = false;
+  Timer? _searchDebounce;
+  bool _showSearchResults = false;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     // Set default tab to "Currently" (index 0)
     _tabController.index = 0;
-    
+
     // Initialize mock weather data
     _weatherData = WeatherData.mock();
-    
+
+    // Add listener to search controller
+    _searchController.addListener(_onSearchInputChanged);
+
     // Check for location permission on startup
     _checkLocationPermission();
   }
-  
+
   Future<void> _checkLocationPermission() async {
     try {
       bool hasPermission = await _locationService.isLocationPermissionGranted();
@@ -56,10 +69,82 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
   }
 
+  void _onSearchInputChanged() {
+    // Show search results when the user is typing
+    if (_searchController.text.isNotEmpty) {
+      setState(() {
+        _showSearchResults = true;
+      });
+
+      // Use debounce to prevent calling the API too frequently
+      if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
+      _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+        _searchLocation(_searchController.text);
+      });
+    } else {
+      _clearSearchResults();
+    }
+  }
+
+  // Clear search results
+  void _clearSearchResults() {
+    setState(() {
+      _searchResults = [];
+      _showSearchResults = false;
+    });
+  }
+
+  // Search for locations by name
+  Future<void> _searchLocation(String query) async {
+    if (query.isEmpty) {
+      _clearSearchResults();
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      final response = await GeocodingService.searchLocation(query: query);
+      setState(() {
+        _searchResults = response.results;
+        _isSearching = false;
+      });
+    } catch (e) {
+      print('Error searching locations: $e');
+      setState(() {
+        _isSearching = false;
+      });
+    }
+  }
+
+  // Handle location selection from search results
+  void _onLocationSelected(Location location) {
+    setState(() {
+      _currentLocation = location.name;
+      _isUsingGeolocation = false;
+      _coordinatesText = '${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)}';
+      _searchResults = [];
+      _showSearchResults = false;
+    });
+
+    // Clear the search field
+    _searchController.clear();
+
+    // Show a snackbar to indicate that we're fetching the weather
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Getting weather for ${location.name}...')),
+    );
+
+    // Here you would typically call the weather API with location.latitude and location.longitude
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
@@ -193,13 +278,33 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           controller: _searchController,
           onLocationPressed: _onLocationPressed,
           onSubmitted: _onSearchSubmitted,
+          onChanged: (value) => setState(() {}), // Update UI when text changes
+          isSearching: _isSearching,
+          onClearSearch: _clearSearchResults,
         ),
       ),
-      body: SafeArea(
-        child: TabBarView(
-          controller: _tabController,
-          children: _buildTabContents(),
-        ),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: TabBarView(
+              controller: _tabController,
+              children: _buildTabContents(),
+            ),
+          ),
+          if (_showSearchResults && (_searchResults.isNotEmpty || _isSearching))
+            Positioned(
+              top: 0,
+              left: 8,
+              right: 8,
+              child: SafeArea(
+                child: LocationSearchResults(
+                  locations: _searchResults,
+                  onLocationSelected: _onLocationSelected,
+                  isLoading: _isSearching,
+                ),
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: WeatherTabBar(controller: _tabController),
     );
