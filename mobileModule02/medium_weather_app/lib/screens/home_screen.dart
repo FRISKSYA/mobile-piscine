@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import '../config/constants.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/weather_tab_bar.dart';
 import '../widgets/tab_content.dart';
 import '../models/weather.dart';
 import '../models/forecast.dart';
+import '../services/location_service.dart';
 
 /// Main home screen with tabs
 class HomePage extends StatefulWidget {
@@ -17,6 +19,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  final LocationService _locationService = LocationService();
   
   // Mock weather data (to be replaced with actual API data)
   late WeatherData _weatherData;
@@ -24,6 +27,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   // Current location text to display
   String _currentLocation = '';
   bool _isUsingGeolocation = false;
+  String _coordinatesText = '';
+  bool _isLoadingLocation = false;
+  bool _locationPermissionDenied = false;
 
   @override
   void initState() {
@@ -34,6 +40,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     
     // Initialize mock weather data
     _weatherData = WeatherData.mock();
+    
+    // Check for location permission on startup
+    _checkLocationPermission();
+  }
+  
+  Future<void> _checkLocationPermission() async {
+    try {
+      bool hasPermission = await _locationService.isLocationPermissionGranted();
+      setState(() {
+        _locationPermissionDenied = !hasPermission;
+      });
+    } catch (e) {
+      print('Error checking location permission: $e');
+    }
   }
 
   @override
@@ -43,10 +63,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  void _onLocationPressed() {
-    // Set the current location to "Geolocation"
+  void _onLocationPressed() async {
+    // Show loading state
     setState(() {
-      _currentLocation = 'Geolocation';
+      _isLoadingLocation = true;
       _isUsingGeolocation = true;
     });
     
@@ -54,6 +74,58 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Getting current location...')),
     );
+    
+    try {
+      // Check if location permission is granted
+      bool hasPermission = await _locationService.isLocationPermissionGranted();
+      
+      if (!hasPermission) {
+        // Request permission if not granted
+        hasPermission = await _locationService.requestLocationPermission();
+        
+        if (!hasPermission) {
+          setState(() {
+            _locationPermissionDenied = true;
+            _isLoadingLocation = false;
+            _coordinatesText = '';
+            _currentLocation = 'Location permission denied';
+          });
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location permission denied. Please enable it in app settings.'),
+              duration: Duration(seconds: 4),
+            ),
+          );
+          return;
+        }
+      }
+      
+      // Get the current position
+      Position position = await _locationService.getCurrentLocation();
+      
+      // Format the position for display
+      String formattedPosition = _locationService.formatPosition(position);
+      
+      // Update the state with the current location
+      setState(() {
+        _coordinatesText = formattedPosition;
+        _currentLocation = 'Current Location';
+        _isLoadingLocation = false;
+        _locationPermissionDenied = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingLocation = false;
+        _coordinatesText = '';
+        _currentLocation = 'Error getting location';
+      });
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error getting location: ${e.toString()}')),
+      );
+    }
   }
 
   void _onSearchSubmitted(String location) {
@@ -87,6 +159,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       icon: icon,
       title: '$tabName Tab',
       subtitle: _getTabSubtitle(tabName),
+      extraInfo: _isUsingGeolocation ? _coordinatesText : '',
+      isLoading: _isLoadingLocation,
     );
   }
 

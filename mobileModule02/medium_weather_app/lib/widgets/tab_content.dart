@@ -7,6 +7,8 @@ class TabContent extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String extraInfo;
+  final bool isLoading;
 
   const TabContent({
     super.key,
@@ -14,6 +16,8 @@ class TabContent extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.extraInfo = '',
+    this.isLoading = false,
   });
 
   /// Builds the icon widget with responsive sizing
@@ -96,6 +100,40 @@ class TabContent extends StatelessWidget {
         MediaQuery.of(context).padding.bottom;
   }
 
+  /// Builds extra information (like coordinates) if available
+  Widget _buildExtraInfo(BuildContext context) {
+    if (extraInfo.isEmpty) return const SizedBox.shrink();
+    
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        Text(
+          extraInfo,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: AppTheme.getResponsiveFontSize(context, 0.035, maxSize: 18),
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).colorScheme.tertiary,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  /// Builds a loading indicator
+  Widget _buildLoadingIndicator(BuildContext context) {
+    if (!isLoading) return const SizedBox.shrink();
+    
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        CircularProgressIndicator(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -114,6 +152,8 @@ class TabContent extends StatelessWidget {
                 _buildTitle(context),
                 const SizedBox(height: 8),
                 _buildSubtitle(context),
+                _buildExtraInfo(context),
+                _buildLoadingIndicator(context),
               ],
             ),
           ),

@@ -41,15 +41,75 @@ lib/
 // 現在の位置情報を保持
 String _currentLocation = '';
 bool _isUsingGeolocation = false;
+String _coordinatesText = ''; // 座標情報を保持
+bool _isLoadingLocation = false; // 位置情報取得中の状態
+bool _locationPermissionDenied = false; // 位置情報の許可状態
 
 // 位置情報ボタンが押された時の処理
-void _onLocationPressed() {
+void _onLocationPressed() async {
+  // ローディング状態を表示
   setState(() {
-    _currentLocation = 'Geolocation';
+    _isLoadingLocation = true;
     _isUsingGeolocation = true;
   });
   
-  // 省略...
+  // 位置情報を取得中であることを通知
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Getting current location...')),
+  );
+  
+  try {
+    // 位置情報の許可状態を確認
+    bool hasPermission = await _locationService.isLocationPermissionGranted();
+    
+    if (!hasPermission) {
+      // 許可が得られていない場合は許可をリクエスト
+      hasPermission = await _locationService.requestLocationPermission();
+      
+      if (!hasPermission) {
+        // 許可が拒否された場合の処理
+        setState(() {
+          _locationPermissionDenied = true;
+          _isLoadingLocation = false;
+          _coordinatesText = '';
+          _currentLocation = 'Location permission denied';
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location permission denied. Please enable it in app settings.'),
+            duration: Duration(seconds: 4),
+          ),
+        );
+        return;
+      }
+    }
+    
+    // 現在の位置情報を取得
+    Position position = await _locationService.getCurrentLocation();
+    
+    // 位置情報を表示用にフォーマット
+    String formattedPosition = _locationService.formatPosition(position);
+    
+    // 状態を更新
+    setState(() {
+      _coordinatesText = formattedPosition;
+      _currentLocation = 'Current Location';
+      _isLoadingLocation = false;
+      _locationPermissionDenied = false;
+    });
+  } catch (e) {
+    // エラー処理
+    setState(() {
+      _isLoadingLocation = false;
+      _coordinatesText = '';
+      _currentLocation = 'Error getting location';
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error getting location: ${e.toString()}')),
+    );
+  }
 }
 
 // 検索が実行された時の処理
@@ -84,6 +144,8 @@ TabContent _buildTabContent(String tabName, IconData icon) {
     icon: icon,
     title: '$tabName Tab',
     subtitle: _getTabSubtitle(tabName),
+    extraInfo: _isUsingGeolocation ? _coordinatesText : '', // 座標情報を表示
+    isLoading: _isLoadingLocation, // 読み込み状態を反映
   );
 }
 
@@ -154,18 +216,30 @@ Widget _buildSubtitle(BuildContext context) {
 
 ### screens/home_screen.dart
 
-アプリケーションのメイン画面であり、タブバーとタブコンテンツを管理します。検索機能と位置情報機能も実装しています。ユーザー入力の処理とタブコンテンツの作成を別々のメソッドに分離しています。
+アプリケーションのメイン画面であり、タブバーとタブコンテンツを管理します。検索機能と位置情報機能も実装しています。ユーザー入力の処理とタブコンテンツの作成を別々のメソッドに分離しています。位置情報の取得と表示を担当します。
+
+### services/location_service.dart
+
+位置情報サービスを提供するクラスです。デバイスのGPS機能を利用して現在位置の座標を取得したり、位置情報の権限を管理したりします。主な機能は以下の通りです：
+
+1. 現在位置の取得: `getCurrentLocation()`メソッドを使用してデバイスの現在の位置情報を取得します。
+2. 位置情報の許可状態の確認: `isLocationPermissionGranted()`メソッドで位置情報の権限が与えられているかを確認します。
+3. 位置情報の許可のリクエスト: `requestLocationPermission()`メソッドで位置情報の権限をユーザーにリクエストします。
+4. 座標のフォーマット: `formatPosition()`メソッドで位置情報を人間が読みやすい形式に変換します。
 
 ### widgets/tab_content.dart
 
-タブコンテンツの共通レイアウトを定義する再利用可能なウィジェットです。UI要素の構築を複数のヘルパーメソッドに分離し、コードの可読性と保守性を高めています。
+タブコンテンツの共通レイアウトを定義する再利用可能なウィジェットです。UI要素の構築を複数のヘルパーメソッドに分離し、コードの可読性と保守性を高めています。位置情報の座標などの追加情報と読み込み状態を表示する機能が追加されました。
 
 ## 使い方
 
 1. アプリを起動すると、3つのタブ（Currently、Today、Weekly）を持つ画面が表示されます。
 2. 上部の検索バーに場所の名前を入力し、キーボードの実行ボタンをタップすると、その場所の情報が全タブに表示されます。
-3. 右上の位置情報ボタンをタップすると、「Geolocation」という情報が全タブに表示されます。
-4. 下部のタブバーで各タブを切り替えることができます。
+3. 右上の位置情報ボタンをタップすると、アプリは位置情報の許可をリクエストします。
+   - 許可された場合は、現在位置の座標（緯度と経度）がタブに表示されます。
+   - 許可が拒否された場合は、エラーメッセージが表示され、ユーザーは手動で場所を検索する必要があります。
+4. 位置情報の取得中は、ローディングインジケーターが表示されます。
+5. 下部のタブバーで各タブを切り替えることができます。
 
 ## アーキテクチャの特徴
 
@@ -180,10 +254,12 @@ Widget _buildSubtitle(BuildContext context) {
 
 このプロジェクト構造は、以下のような将来の拡張を見据えています：
 
-1. **実際の天気API統合**: 検索した場所や現在地の実際の天気データを取得・表示する機能。
-2. **状態管理の強化**: より複雑なアプリケーション状態を管理するためのProviderやBlocパターンの導入。
-3. **ユニットテストの追加**: 各コンポーネントの動作を検証するためのテストコードの追加。
-4. **パフォーマンス最適化**: 大量のデータを扱う場合のパフォーマンス向上のための最適化。
+1. **実際の天気API統合**: 取得した座標や検索した場所の実際の天気データを取得・表示する機能。
+2. **座標から都市名の取得**: 現在の座標からリバースジオコーディングを行い、都市名を表示する機能。
+3. **位置情報の精度向上**: 位置情報の精度を向上させるための設定やオプションの追加。
+4. **状態管理の強化**: より複雑なアプリケーション状態を管理するためのProviderやBlocパターンの導入。
+5. **ユニットテストの追加**: 各コンポーネントの動作を検証するためのテストコードの追加。
+6. **パフォーマンス最適化**: 大量のデータを扱う場合のパフォーマンス向上のための最適化。
 
 ## まとめ
 
