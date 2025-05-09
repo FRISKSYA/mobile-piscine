@@ -24,7 +24,7 @@ class TabContent extends StatelessWidget {
   Widget _buildIcon(BuildContext context) {
     return Icon(
       icon,
-      size: AppTheme.getResponsiveFontSize(context, 0.15, maxSize: 100),
+      size: AppTheme.getResponsiveIconSize(context, 0.15, maxSize: 80),
       color: Theme.of(context).colorScheme.primary.withAlpha(179), // 0.7 * 255 = 179
     );
   }

@@ -21,7 +21,7 @@ class WeeklyScreen extends StatelessWidget {
         children: [
           Icon(
             Icons.calendar_view_week,
-            size: AppTheme.getResponsiveFontSize(context, 0.15, maxSize: 100),
+            size: AppTheme.getResponsiveIconSize(context, 0.15, maxSize: 80),
             color: Theme.of(context).colorScheme.primary.withAlpha(179), // 0.7 * 255 = 179
           ),
           const SizedBox(height: 16),

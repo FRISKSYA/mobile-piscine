@@ -70,6 +70,11 @@ class AppTheme {
     return MediaQuery.of(context).size.width < 600;
   }
 
+  // Helper method to determine if device is in landscape mode
+  static bool isLandscape(BuildContext context) {
+    return MediaQuery.of(context).orientation == Orientation.landscape;
+  }
+
   // Get responsive padding based on screen size
   static EdgeInsets getResponsivePadding(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
@@ -80,6 +85,22 @@ class AppTheme {
   static double getResponsiveFontSize(BuildContext context, double percent, {double? maxSize}) {
     final double width = MediaQuery.of(context).size.width;
     final double size = width * percent;
+    return maxSize != null && size > maxSize ? maxSize : size;
+  }
+
+  // Get responsive icon size that accounts for orientation
+  static double getResponsiveIconSize(BuildContext context, double percent, {double? maxSize}) {
+    final Size screenSize = MediaQuery.of(context).size;
+    final bool isLandscapeMode = isLandscape(context);
+
+    // In landscape mode, use the height as the base for calculation
+    // since the height becomes the limiting factor
+    final double base = isLandscapeMode ? screenSize.height : screenSize.width;
+
+    // In landscape, reduce the percentage to keep icons smaller
+    final double adjustedPercent = isLandscapeMode ? percent * 0.6 : percent;
+
+    final double size = base * adjustedPercent;
     return maxSize != null && size > maxSize ? maxSize : size;
   }
 }
