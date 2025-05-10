@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/data/forecast.dart';
+import '../../models/forecast/forecast.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../models/data/location.dart';
+import '../../models/location/location.dart';
 import 'package:intl/intl.dart';
 
 /// Screen to display weekly forecast

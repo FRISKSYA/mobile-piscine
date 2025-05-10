@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/data/forecast.dart';
-import '../../models/data/location.dart';
+import '../../models/forecast/forecast.dart';
+import '../../models/location/location.dart';
 import 'currently_screen.dart';
 import 'today_screen.dart';
 import 'weekly_screen.dart';

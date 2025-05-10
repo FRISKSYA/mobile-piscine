@@ -82,36 +82,31 @@ lib/
 │       ├── app_search_bar.dart          # 検索バー
 │       └── app_tab_bar.dart             # タブバー
 │
-└── models/                              # 画面と機能ごとのモジュール
-    ├── common/                          # 共通モデル
-    │   ├── weather.dart                 # 天気データモデル
-    │   ├── forecast.dart                # 予報データモデル
-    │   └── location.dart                # 位置情報データモデル
-    │
-    ├── home/                            # ホーム画面モジュール
-    │   ├── screens/                     # 画面
-    │   │   └── home_screen.dart         # ホーム画面
-    │   ├── widgets/                     # 専用ウィジェット
+├── models/                              # データモデルとAPI接続
+│   ├── forecast/                        # 予報関連
+│   │   └── forecast.dart                # 予報データモデル
+│   ├── location/                        # 位置情報関連
+│   │   ├── location.dart                # 位置情報データモデル
+│   │   ├── geocoding_service.dart       # ジオコーディングサービス
+│   │   └── location_service.dart        # 位置情報サービス
+│   └── weather/                         # 天気関連
+│       ├── weather.dart                 # 天気データモデル
+│       └── weather_service.dart         # 天気API通信
+│
+└── screens/                             # 画面コンポーネント
+    ├── home/                            # ホーム画面
+    │   ├── home_screen.dart             # ホーム画面
     │   └── home_controller.dart         # コントローラー
-    │
-    ├── weather/                         # 天気情報モジュール
-    │   ├── screens/                     # 画面
-    │   │   ├── currently_screen.dart    # 現在の天気画面
-    │   │   ├── today_screen.dart        # 今日の天気画面
-    │   │   └── weekly_screen.dart       # 週間予報画面
-    │   ├── widgets/                     # 専用ウィジェット
-    │   │   ├── tab_content_builder.dart # タブコンテンツビルダー
-    │   │   └── tab_content.dart         # タブコンテンツ
-    │   └── weather_service.dart         # 天気API通信
-    │
-    ├── location/                        # 位置情報モジュール
-    │   ├── widgets/                     # 専用ウィジェット
-    │   │   └── location_search_results.dart # 位置検索結果
+    ├── weather/                         # 天気画面
+    │   ├── currently_screen.dart        # 現在の天気画面
+    │   ├── today_screen.dart            # 今日の天気画面
+    │   ├── weekly_screen.dart           # 週間予報画面
+    │   ├── tab_content_builder.dart     # タブコンテンツビルダー
+    │   └── tab_content.dart             # タブコンテンツ
+    ├── location/                        # 位置情報画面
     │   ├── location_manager.dart        # 位置管理
-    │   ├── location_service.dart        # 位置サービス
-    │   └── geocoding_service.dart       # ジオコーディングサービス
-    │
-    └── search/                          # 検索モジュール
+    │   └── location_search_results.dart # 位置検索結果
+    └── search/                          # 検索機能
         └── search_manager.dart          # 検索管理
 ```
 
@@ -306,7 +301,7 @@ Widget _buildSubtitle(BuildContext context) {
 
 アプリケーションのテーマ設定を定義します。色、フォント、スタイルなどのUIの設定と、レスポンシブデザインのためのユーティリティメソッドが含まれています。
 
-### models/home/screens/home_screen.dart
+### screens/home/home_screen.dart
 
 アプリケーションのメイン画面であり、タブバーとタブコンテンツを管理します。検索機能と位置情報機能も実装しています。ユーザー入力の処理とタブコンテンツの作成を別々のメソッドに分離しています。位置情報の取得と表示を担当します。
 
@@ -319,7 +314,7 @@ Widget _buildSubtitle(BuildContext context) {
 3. 位置情報の許可のリクエスト: `requestLocationPermission()`メソッドで位置情報の権限をユーザーにリクエストします。
 4. 座標のフォーマット: `formatPosition()`メソッドで位置情報を人間が読みやすい形式に変換します。
 
-### models/weather/widgets/tab_content.dart
+### screens/weather/tab_content.dart
 
 タブコンテンツの共通レイアウトを定義する再利用可能なウィジェットです。UI要素の構築を複数のヘルパーメソッドに分離し、コードの可読性と保守性を高めています。位置情報の座標などの追加情報と読み込み状態を表示する機能が追加されました。
 
@@ -503,7 +498,7 @@ class WeatherService {
 }
 ```
 
-### models/home/home_controller.dart
+### screens/home/home_controller.dart
 ユーザー入力と表示データを連携させるController：
 
 ```dart
@@ -573,7 +568,7 @@ class HomeController {
 }
 ```
 
-### models/weather/widgets/tab_content_builder.dart
+### screens/weather/tab_content_builder.dart
 Controllerからのデータを画面表示用に変換：
 
 ```dart

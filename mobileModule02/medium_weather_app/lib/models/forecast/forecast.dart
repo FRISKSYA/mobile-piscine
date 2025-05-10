@@ -1,4 +1,4 @@
-import 'weather.dart';
+import '../weather/weather.dart';
 
 /// Model class for daily forecast data
 class DailyForecast {
