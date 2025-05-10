@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../common/location.dart';
+import '../../models/data/location.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Widget to display location search results

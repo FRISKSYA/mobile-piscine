@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../common/location.dart';
-import '../location/geocoding_service.dart';
+import '../../models/data/location.dart';
+import '../../models/api/geocoding_service.dart';
 import '../../core/utils/logger_service.dart';
 
 class SearchManager {

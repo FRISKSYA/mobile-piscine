@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../common/weather.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../common/location.dart';
+import '../../models/data/weather.dart';
+import '../../core/theme/app_theme.dart';
+import '../../models/data/location.dart';
 
 /// Screen to display current weather
 class CurrentlyScreen extends StatelessWidget {

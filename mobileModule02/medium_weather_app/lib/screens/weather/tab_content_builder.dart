@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../common/forecast.dart';
-import '../../common/location.dart';
-import '../screens/currently_screen.dart';
-import '../screens/today_screen.dart';
-import '../screens/weekly_screen.dart';
+import '../../models/data/forecast.dart';
+import '../../models/data/location.dart';
+import 'currently_screen.dart';
+import 'today_screen.dart';
+import 'weekly_screen.dart';
 
 class TabContentBuilder {
   /// Builds all tab content widgets with weather data

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../home/home_controller.dart';
-import '../../weather/widgets/tab_content_builder.dart';
-import '../../../core/widgets/app_search_bar.dart';
-import '../../../core/widgets/app_tab_bar.dart';
-import '../../location/widgets/location_search_results.dart';
+import 'home_controller.dart';
+import '../weather/tab_content_builder.dart';
+import '../../core/widgets/app_search_bar.dart';
+import '../../core/widgets/app_tab_bar.dart';
+import '../location/location_search_results.dart';
 
 /// Main home screen with tabs
 class HomePage extends StatefulWidget {

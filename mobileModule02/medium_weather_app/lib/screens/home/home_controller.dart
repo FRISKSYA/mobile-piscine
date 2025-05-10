@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../common/forecast.dart';
-import '../common/location.dart';
-import '../weather/weather_service.dart';
+import '../../models/data/forecast.dart';
+import '../../models/data/location.dart';
+import '../../models/api/weather_service.dart';
 import '../../core/utils/logger_service.dart';
 import '../location/location_manager.dart';
 import '../search/search_manager.dart';

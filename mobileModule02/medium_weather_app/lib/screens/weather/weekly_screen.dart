@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../common/forecast.dart';
+import '../../models/data/forecast.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../common/location.dart';
+import '../../models/data/location.dart';
 import 'package:intl/intl.dart';
 
-/// Screen to display today's hourly forecast
-class TodayScreen extends StatelessWidget {
-  final List<HourlyForecast> hourlyForecasts;
+/// Screen to display weekly forecast
+class WeeklyScreen extends StatelessWidget {
+  final List<DailyForecast> dailyForecasts;
   final Location? location;
 
-  const TodayScreen({
+  const WeeklyScreen({
     super.key,
-    required this.hourlyForecasts,
+    required this.dailyForecasts,
     this.location,
   });
 
@@ -23,16 +23,16 @@ class TodayScreen extends StatelessWidget {
         // Location header
         _buildLocationHeader(context),
 
-        // Hourly forecast list
+        // Daily forecast list
         Expanded(
-          child: _buildHourlyForecastList(context),
+          child: _buildDailyForecastList(context),
         ),
       ],
     );
   }
 
   Widget _buildLocationHeader(BuildContext context) {
-    String locationDisplay = location?.displayName ?? 'Today\'s Forecast';
+    String locationDisplay = location?.displayName ?? 'Weekly Forecast';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
@@ -56,7 +56,7 @@ class TodayScreen extends StatelessWidget {
             ),
           const SizedBox(height: 8),
           Text(
-            'Hourly Forecast',
+            '7-Day Forecast',
             style: TextStyle(
               fontSize: AppTheme.getResponsiveFontSize(context, 0.05, maxSize: 20),
               fontWeight: FontWeight.w500,
@@ -68,101 +68,92 @@ class TodayScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHourlyForecastList(BuildContext context) {
-    if (hourlyForecasts.isEmpty) {
+  Widget _buildDailyForecastList(BuildContext context) {
+    if (dailyForecasts.isEmpty) {
       return const Center(
-        child: Text('No hourly forecast data available'),
+        child: Text('No weekly forecast data available'),
       );
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(8.0),
-      itemCount: hourlyForecasts.length,
+      itemCount: dailyForecasts.length,
       itemBuilder: (context, index) {
-        final forecast = hourlyForecasts[index];
-        return _buildHourlyForecastItem(context, forecast);
+        final forecast = dailyForecasts[index];
+        return _buildDailyForecastItem(context, forecast, index);
       },
     );
   }
 
-  Widget _buildHourlyForecastItem(BuildContext context, HourlyForecast forecast) {
-    final timeFormat = DateFormat('HH:mm');
+  Widget _buildDailyForecastItem(BuildContext context, DailyForecast forecast, int index) {
+    final dateFormat = DateFormat('E, MMM d'); // Day of week, Month Day (e.g., Mon, Jan 15)
+    final isToday = index == 0;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: [
-                // Time
-                SizedBox(
-                  width: 60,
-                  child: Text(
-                    timeFormat.format(forecast.time),
+            // Date
+            SizedBox(
+              width: 100,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isToday ? 'Today' : dateFormat.format(forecast.date),
                     style: TextStyle(
                       fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+                ],
+              ),
+            ),
 
-                // Weather condition icon and text
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(
-                        _getWeatherIcon(forecast.condition),
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          forecast.condition,
-                          style: TextStyle(
-                            fontSize: AppTheme.getResponsiveFontSize(context, 0.035, maxSize: 14),
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+            // Weather condition icon and text
+            Expanded(
+              child: Row(
+                children: [
+                  Icon(
+                    _getWeatherIcon(forecast.condition),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      forecast.condition,
+                      style: TextStyle(
+                        fontSize: AppTheme.getResponsiveFontSize(context, 0.035, maxSize: 14),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-                // Temperature
+            // Min-Max Temperature
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
                 Text(
-                  '${forecast.temperature.toStringAsFixed(1)}°C',
+                  '${forecast.maxTemp.toStringAsFixed(1)}°C',
                   style: TextStyle(
                     fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
+                Text(
+                  '${forecast.minTemp.toStringAsFixed(1)}°C',
+                  style: TextStyle(
+                    fontSize: AppTheme.getResponsiveFontSize(context, 0.035, maxSize: 14),
+                    color: Colors.grey[600],
+                  ),
+                ),
               ],
-            ),
-
-            // Wind speed row
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0, left: 60.0),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.air,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Wind: ${forecast.windSpeed.toStringAsFixed(1)} km/h',
-                    style: TextStyle(
-                      fontSize: AppTheme.getResponsiveFontSize(context, 0.035, maxSize: 14),
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -175,6 +166,8 @@ class TodayScreen extends StatelessWidget {
 
     if (condition.contains('sun') || condition.contains('clear')) {
       return Icons.wb_sunny;
+    } else if (condition.contains('part') && condition.contains('cloud')) {
+      return Icons.wb_cloudy;
     } else if (condition.contains('cloud')) {
       return Icons.cloud;
     } else if (condition.contains('rain')) {

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../common/weather.dart';
-import '../common/forecast.dart';
+import '../data/weather.dart';
+import '../data/forecast.dart';
 import '../../core/utils/logger_service.dart';
-import '../location/geocoding_service.dart';
+import 'geocoding_service.dart';
 
 /// Result class that includes weather data and error information
 class WeatherResult {
