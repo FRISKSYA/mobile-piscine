@@ -52,6 +52,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 isUsingGeolocation: _viewModel.locationManager.isUsingGeolocation,
                 coordinatesText: _viewModel.locationManager.coordinatesText,
                 isLoadingLocation: _viewModel.locationManager.isLoadingLocation,
+                selectedLocation: _viewModel.selectedLocation,
               ),
             ),
           ),

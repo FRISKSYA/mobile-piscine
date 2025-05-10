@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/geocoding/location.dart';
+import '../utils/logger_service.dart';
 
 /// Service to handle geocoding requests
 class GeocodingService {
@@ -31,6 +32,8 @@ class GeocodingService {
           'format': 'json',
         },
       );
+
+      loggerService.d('Geocoding API request: $uri');
       
       // Make the HTTP request
       final response = await http.get(uri);
@@ -41,12 +44,12 @@ class GeocodingService {
         return GeocodingResponse.fromJson(data);
       } else {
         // Handle error cases
-        print('Error searching locations: ${response.statusCode}');
+        loggerService.e('Error searching locations: ${response.statusCode}', response.body);
         return GeocodingResponse(results: []);
       }
     } catch (e) {
       // Handle exceptions
-      print('Exception searching locations: $e');
+      loggerService.e('Exception searching locations:', e);
       return GeocodingResponse(results: []);
     }
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../models/geocoding/location.dart';
 import '../../../services/geocoding_service.dart';
+import '../../../utils/logger_service.dart';
 
 class SearchManager {
   // Search state
@@ -24,7 +25,7 @@ class SearchManager {
       searchResults = response.results;
       isSearching = false;
     } catch (e) {
-      print('Error searching locations: $e');
+      loggerService.e('Error searching locations: $e');
       isSearching = false;
     }
   }
@@ -40,10 +41,12 @@ class SearchManager {
     // Show search results when the user is typing
     if (text.isNotEmpty) {
       showSearchResults = true;
+      loggerService.d('Search input changed: $text');
 
       // Use debounce to prevent calling the API too frequently
       if (searchDebounce?.isActive ?? false) searchDebounce!.cancel();
       searchDebounce = Timer(const Duration(milliseconds: 500), () {
+        loggerService.i('Searching for: $text');
         searchCallback(text);
       });
     } else {

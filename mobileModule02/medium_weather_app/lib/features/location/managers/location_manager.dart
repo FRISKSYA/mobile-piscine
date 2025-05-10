@@ -1,6 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import '../../../services/location_service.dart';
 import 'package:flutter/material.dart';
+import '../../../utils/logger_service.dart';
 
 class LocationManager {
   final LocationService _locationService = LocationService();
@@ -19,7 +20,7 @@ class LocationManager {
       locationPermissionDenied = !hasPermission;
       return hasPermission;
     } catch (e) {
-      print('Error checking location permission: $e');
+      loggerService.e('Error checking location permission: $e');
       return false;
     }
   }

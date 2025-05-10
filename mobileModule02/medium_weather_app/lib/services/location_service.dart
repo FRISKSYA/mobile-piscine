@@ -1,4 +1,5 @@
 import 'package:geolocator/geolocator.dart';
+import '../utils/logger_service.dart';
 
 /// A service to handle location-related operations
 class LocationService {
@@ -12,6 +13,7 @@ class LocationService {
     // Check if location services are enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      loggerService.w('Location services are disabled.');
       throw Exception('Location services are disabled.');
     }
 
@@ -19,13 +21,16 @@ class LocationService {
     LocationPermission permission = await Geolocator.checkPermission();
     
     if (permission == LocationPermission.denied) {
+      loggerService.i('Location permission denied, requesting permission...');
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        loggerService.w('Location permissions are denied after request.');
         throw Exception('Location permissions are denied.');
       }
     }
-    
+
     if (permission == LocationPermission.deniedForever) {
+      loggerService.e('Location permissions are permanently denied, we cannot request permissions.');
       throw Exception('Location permissions are permanently denied, we cannot request permissions.');
     } 
 

@@ -16,7 +16,10 @@ class HomeViewModel {
 
   // Weather data
   late Weather weather;
-  
+
+  // Selected location
+  Location? selectedLocation;
+
   // Initialize the view model
   void init(TickerProvider vsync) {
     tabController = TabController(length: 3, vsync: vsync);
@@ -25,14 +28,14 @@ class HomeViewModel {
 
     // Initialize mock weather data
     weather = Weather.mock();
-    
+
     // Add listener to search controller
     searchController.addListener(_onSearchChanged);
-    
+
     // Check for location permission on startup
     locationManager.checkLocationPermission();
   }
-  
+
   // Handle search input changes
   void _onSearchChanged() {
     searchManager.onSearchInputChanged(
@@ -40,38 +43,44 @@ class HomeViewModel {
       searchManager.searchLocation,
     );
   }
-  
+
   // Create a subtitle for tab content
   String getTabSubtitle(String tabName) {
-    return locationManager.currentLocation.isEmpty 
+    return locationManager.currentLocation.isEmpty
         ? 'This is the $tabName tab content'
         : locationManager.currentLocation;
   }
-  
+
   // Get the current location
   Future<void> getCurrentLocation(BuildContext context) async {
     await locationManager.getCurrentLocation(context);
+    // Reset selected location when using device location
+    selectedLocation = null;
   }
-  
+
   // Handle location selection from search results
   void onLocationSelected(Location location, BuildContext context) {
     locationManager.currentLocation = location.name;
     locationManager.isUsingGeolocation = false;
     locationManager.coordinatesText = '${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)}';
-    
+
+    // Store the selected location object to display in weather screens
+    selectedLocation = location;
+
     searchManager.onLocationSelected(location, context, searchController);
   }
-  
+
   // Handle search submission
   void onSearchSubmitted(String location, BuildContext context) {
     if (location.isEmpty) return;
-    
+
     locationManager.currentLocation = location;
     locationManager.isUsingGeolocation = false;
-    
+
+    // Will need to create a Location object for search submissions
     searchManager.onSearchSubmitted(location, context, searchController);
   }
-  
+
   // Clean up resources
   void dispose() {
     tabController.dispose();

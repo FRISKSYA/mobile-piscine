@@ -19,6 +19,30 @@ Open-MeteoのジオコーディングAPIを使用して、以下の機能を実�
 3. **リアルタイム候補表示**: 入力中にリアルタイムで候補が更新される
 4. **都市選択機能**: 候補リストから特定の都市を選択できる
 
+## 新機能：天気情報の表示
+
+Open-Meteoの天気予報APIを使用して、以下の情報を各タブに表示するように実装しました：
+
+### Currentlyタブ（現在の天気）
+- **位置情報**: 都市名、地域、国名
+- **現在の天気**: 気温（摂氏）、天気の状態（曇り、晴れなど）
+- **詳細情報**: 風速（km/h）、湿度（%）、体感温度（摂氏）
+
+### Todayタブ（今日の予報）
+- **位置情報**: 都市名、地域、国名
+- **時間ごとの天気リスト**:
+  - 時間帯（時：分）
+  - 各時間の気温（摂氏）
+  - 各時間の天気状態（アイコンと説明）
+  - 各時間の風速（km/h）
+
+### Weeklyタブ（週間予報）
+- **位置情報**: 都市名、地域、国名
+- **日ごとの天気リスト**:
+  - 日付（曜日と日）
+  - 最高気温と最低気温（摂氏）
+  - 天気の説明（アイコンと説明）
+
 ## ディレクトリ構造
 
 ```
@@ -255,6 +279,60 @@ Widget _buildSubtitle(BuildContext context) {
 4. 位置情報の取得中は、ローディングインジケーターが表示されます。
 5. 下部のタブバーで各タブを切り替えることができます。
 
+## 天気表示の実装
+
+各タブでの天気情報の表示は、以下のコンポーネントを用いて実装しています：
+
+### CurrentlyScreen
+現在の天気を表示するスクリーンで、以下のコンポーネントで構成されています：
+```dart
+Widget build(BuildContext context) {
+  return SingleChildScrollView(
+    padding: const EdgeInsets.all(16.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 位置情報の表示
+        _buildLocationInfo(context),
+        const SizedBox(height: 24),
+
+        // 現在の天気情報の表示
+        _buildWeatherSection(context),
+      ],
+    ),
+  );
+}
+```
+
+### TodayScreen
+時間ごとの予報を表示するスクリーンで、ListView.builderを使用してリスト表示しています：
+```dart
+Widget _buildHourlyForecastList(BuildContext context) {
+  return ListView.builder(
+    padding: const EdgeInsets.all(8.0),
+    itemCount: hourlyForecasts.length,
+    itemBuilder: (context, index) {
+      final forecast = hourlyForecasts[index];
+      return _buildHourlyForecastItem(context, forecast);
+    },
+  );
+}
+```
+
+### WeeklyScreen
+日ごとの予報を表示するスクリーンで、同様にリスト表示しています：
+```dart
+Widget _buildDailyForecastItem(BuildContext context, DailyForecast forecast, int index) {
+  final dateFormat = DateFormat('E, MMM d');
+  final isToday = index == 0;
+
+  return Card(
+    // 日付、天気状態、最高・最低気温の表示
+    // ...
+  );
+}
+```
+
 ## アーキテクチャの特徴
 
 このアプリケーションは以下のアーキテクチャパターンに従っています：
@@ -263,6 +341,13 @@ Widget _buildSubtitle(BuildContext context) {
 2. **コンポーネントの再利用**: ウィジェットは再利用可能で、関連するロジックをカプセル化しています。
 3. **メソッドの分割**: 大きな関数を小さなヘルパーメソッドに分割し、コードの可読性と保守性を高めています。
 4. **レスポンシブデザイン**: 様々な画面サイズに対応するためのヘルパーメソッドが組み込まれています。
+5. **データフロー管理**: ViewModelを通じて選択された位置情報が各タブに伝達される仕組みを実装しています。
+
+## データの流れ
+
+1. 位置情報の選択（検索または現在地）→ HomeViewModel.selectedLocation に保存
+2. HomeViewModel → TabContentBuilder → 各スクリーン へと位置情報が伝達される
+3. 各スクリーンでは受け取った位置情報を表示し、対応する天気データをモックして表示
 
 ## 今後の拡張予定
 
@@ -274,6 +359,7 @@ Widget _buildSubtitle(BuildContext context) {
 4. **状態管理の強化**: より複雑なアプリケーション状態を管理するためのProviderやBlocパターンの導入。
 5. **ユニットテストの追加**: 各コンポーネントの動作を検証するためのテストコードの追加。
 6. **パフォーマンス最適化**: 大量のデータを扱う場合のパフォーマンス向上のための最適化。
+7. **UI/UXの改善**: 天気データをより視覚的に分かりやすく表示するためのデザイン改善。
 
 ## 新機能の詳細：Open-Meteo APIによる都市検索
 
