@@ -6,13 +6,6 @@ import '../screens/today_screen.dart';
 import '../screens/weekly_screen.dart';
 
 class TabContentBuilder {
-  /// Creates a subtitle text for a tab based on the current location
-  static String getTabSubtitle(String tabName, String currentLocation) {
-    return currentLocation.isEmpty
-        ? 'This is the $tabName tab content'
-        : currentLocation;
-  }
-
   /// Builds all tab content widgets with weather data
   static List<Widget> buildTabContents({
     required String currentLocation,
