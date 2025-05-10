@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../config/constants.dart';
-import '../config/theme.dart';
+import '../constants/app_constants.dart';
+import '../theme/app_theme.dart';
 
 /// Bottom tab bar for the weather app
-class WeatherTabBar extends StatelessWidget {
+class AppTabBar extends StatelessWidget {
   final TabController controller;
 
-  const WeatherTabBar({
+  const AppTabBar({
     super.key,
     required this.controller,
   });

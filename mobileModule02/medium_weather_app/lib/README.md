@@ -70,18 +70,49 @@ Open-Meteoの無料APIを利用して、実際の天気データを取得・表�
 
 ```
 lib/
-├── config/             # アプリ設定・定数・テーマ
-├── models/             # データモデル
-│   └── geocoding/      # ジオコーディングAPI用モデル
-├── screens/            # 画面
-├── services/           # API・バックエンドサービス
-│   ├── location_service.dart     # 位置情報サービス
-│   └── geocoding_service.dart    # ジオコーディングAPIサービス
-├── utils/              # ユーティリティ関数 (将来の拡張用)
-├── widgets/            # 再利用可能なウィジェット
-│   ├── location_search_results.dart  # 検索結果ウィジェット
-│   └── search_bar.dart              # 検索バーウィジェット
-└── main.dart           # アプリケーションのエントリーポイント
+├── main.dart                            # アプリのエントリーポイント
+├── core/                                # 共通コンポーネント
+│   ├── constants/                       # 定数定義
+│   │   └── app_constants.dart           # アプリ名やAPI関連の定数など
+│   ├── theme/                           # テーマ関連
+│   │   └── app_theme.dart               # アプリのテーマ設定
+│   ├── utils/                           # 共通ユーティリティ
+│   │   └── logger_service.dart          # ロガーサービス
+│   └── widgets/                         # 共通ウィジェット
+│       ├── app_search_bar.dart          # 検索バー
+│       └── app_tab_bar.dart             # タブバー
+│
+└── models/                              # 画面と機能ごとのモジュール
+    ├── common/                          # 共通モデル
+    │   ├── weather.dart                 # 天気データモデル
+    │   ├── forecast.dart                # 予報データモデル
+    │   └── location.dart                # 位置情報データモデル
+    │
+    ├── home/                            # ホーム画面モジュール
+    │   ├── screens/                     # 画面
+    │   │   └── home_screen.dart         # ホーム画面
+    │   ├── widgets/                     # 専用ウィジェット
+    │   └── home_controller.dart         # コントローラー
+    │
+    ├── weather/                         # 天気情報モジュール
+    │   ├── screens/                     # 画面
+    │   │   ├── currently_screen.dart    # 現在の天気画面
+    │   │   ├── today_screen.dart        # 今日の天気画面
+    │   │   └── weekly_screen.dart       # 週間予報画面
+    │   ├── widgets/                     # 専用ウィジェット
+    │   │   ├── tab_content_builder.dart # タブコンテンツビルダー
+    │   │   └── tab_content.dart         # タブコンテンツ
+    │   └── weather_service.dart         # 天気API通信
+    │
+    ├── location/                        # 位置情報モジュール
+    │   ├── widgets/                     # 専用ウィジェット
+    │   │   └── location_search_results.dart # 位置検索結果
+    │   ├── location_manager.dart        # 位置管理
+    │   ├── location_service.dart        # 位置サービス
+    │   └── geocoding_service.dart       # ジオコーディングサービス
+    │
+    └── search/                          # 検索モジュール
+        └── search_manager.dart          # 検索管理
 ```
 
 ## コード設計と実装パターン
@@ -267,19 +298,19 @@ Widget _buildSubtitle(BuildContext context) {
 
 メインアプリケーションのエントリーポイント。アプリケーション全体のテーマと初期画面を設定します。
 
-### config/constants.dart
+### core/constants/app_constants.dart
 
 アプリ全体で使用する定数を定義します。タブ名や最大フォントサイズなどが含まれています。
 
-### config/theme.dart
+### core/theme/app_theme.dart
 
 アプリケーションのテーマ設定を定義します。色、フォント、スタイルなどのUIの設定と、レスポンシブデザインのためのユーティリティメソッドが含まれています。
 
-### screens/home_screen.dart
+### models/home/screens/home_screen.dart
 
 アプリケーションのメイン画面であり、タブバーとタブコンテンツを管理します。検索機能と位置情報機能も実装しています。ユーザー入力の処理とタブコンテンツの作成を別々のメソッドに分離しています。位置情報の取得と表示を担当します。
 
-### services/location_service.dart
+### models/location/location_service.dart
 
 位置情報サービスを提供するクラスです。デバイスのGPS機能を利用して現在位置の座標を取得したり、位置情報の権限を管理したりします。主な機能は以下の通りです：
 
@@ -288,7 +319,7 @@ Widget _buildSubtitle(BuildContext context) {
 3. 位置情報の許可のリクエスト: `requestLocationPermission()`メソッドで位置情報の権限をユーザーにリクエストします。
 4. 座標のフォーマット: `formatPosition()`メソッドで位置情報を人間が読みやすい形式に変換します。
 
-### widgets/tab_content.dart
+### models/weather/widgets/tab_content.dart
 
 タブコンテンツの共通レイアウトを定義する再利用可能なウィジェットです。UI要素の構築を複数のヘルパーメソッドに分離し、コードの可読性と保守性を高めています。位置情報の座標などの追加情報と読み込み状態を表示する機能が追加されました。
 
@@ -306,7 +337,7 @@ Widget _buildSubtitle(BuildContext context) {
 
 各タブでの天気情報の表示は、以下のコンポーネントを用いて実装しています：
 
-### CurrentlyScreen
+### models/weather/screens/currently_screen.dart
 現在の天気を表示するスクリーンで、以下のコンポーネントで構成されています：
 ```dart
 Widget build(BuildContext context) {
@@ -327,7 +358,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-### TodayScreen
+### models/weather/screens/today_screen.dart
 時間ごとの予報を表示するスクリーンで、ListView.builderを使用してリスト表示しています：
 ```dart
 Widget _buildHourlyForecastList(BuildContext context) {
@@ -342,7 +373,7 @@ Widget _buildHourlyForecastList(BuildContext context) {
 }
 ```
 
-### WeeklyScreen
+### models/weather/screens/weekly_screen.dart
 日ごとの予報を表示するスクリーンで、同様にリスト表示しています：
 ```dart
 Widget _buildDailyForecastItem(BuildContext context, DailyForecast forecast, int index) {
@@ -360,7 +391,7 @@ Widget _buildDailyForecastItem(BuildContext context, DailyForecast forecast, int
 
 アプリケーションは、Open-Meteo APIとの統合を通じて実際の天気データを取得し表示します。
 
-### WeatherService
+### models/weather/weather_service.dart
 天気APIとの通信を担当するサービスクラスです：
 
 ```dart
@@ -392,11 +423,11 @@ class WeatherService {
 }
 ```
 
-### HomeViewModel
-ユーザー入力と表示データを連携させるViewModel：
+### models/home/home_controller.dart
+ユーザー入力と表示データを連携させるController：
 
 ```dart
-class HomeViewModel {
+class HomeController {
   // Services
   final WeatherService weatherService = WeatherService();
 
@@ -417,8 +448,8 @@ class HomeViewModel {
 }
 ```
 
-### TabContentBuilder
-ViewModelからのデータを画面表示用に変換：
+### models/weather/widgets/tab_content_builder.dart
+Controllerからのデータを画面表示用に変換：
 
 ```dart
 class TabContentBuilder {
@@ -451,14 +482,14 @@ class TabContentBuilder {
 2. **コンポーネントの再利用**: ウィジェットは再利用可能で、関連するロジックをカプセル化しています。
 3. **メソッドの分割**: 大きな関数を小さなヘルパーメソッドに分割し、コードの可読性と保守性を高めています。
 4. **レスポンシブデザイン**: 様々な画面サイズに対応するためのヘルパーメソッドが組み込まれています。
-5. **データフロー管理**: ViewModelを通じて選択された位置情報が各タブに伝達される仕組みを実装しています。
+5. **データフロー管理**: Controllerを通じて選択された位置情報が各タブに伝達される仕組みを実装しています。
 
 ## データの流れ
 
-1. 位置情報の選択（検索または現在地）→ HomeViewModel.selectedLocation に保存
+1. 位置情報の選択（検索または現在地）→ HomeController.selectedLocation に保存
 2. 選択された位置情報を使用してWeatherServiceでAPI呼び出し → 天気データを取得
-3. 取得した天気データをHomeViewModel.weatherDataに保存
-4. HomeViewModel → TabContentBuilder → 各スクリーン へと位置情報と天気データが伝達される
+3. 取得した天気データをHomeController.weatherDataに保存
+4. HomeController → TabContentBuilder → 各スクリーン へと位置情報と天気データが伝達される
 5. 各スクリーンでは受け取った位置情報と天気データを表示
 
 ## 今後の拡張予定

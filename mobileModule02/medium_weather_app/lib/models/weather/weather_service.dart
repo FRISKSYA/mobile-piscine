@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/weather.dart';
-import '../models/forecast.dart';
-import '../utils/logger_service.dart';
-import '../models/geocoding/location.dart';
-import '../services/geocoding_service.dart';
+import '../common/weather.dart';
+import '../common/forecast.dart';
+import '../../core/utils/logger_service.dart';
+import '../location/geocoding_service.dart';
 
 /// Service class for weather API integration using Open-Meteo API
 class WeatherService {

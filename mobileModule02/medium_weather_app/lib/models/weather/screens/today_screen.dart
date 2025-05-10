@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/forecast.dart';
-import '../config/theme.dart';
-import '../models/geocoding/location.dart';
+import '../../common/forecast.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../common/location.dart';
 import 'package:intl/intl.dart';
 
 /// Screen to display today's hourly forecast

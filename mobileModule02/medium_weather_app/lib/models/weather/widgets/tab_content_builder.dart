@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../config/constants.dart';
-import '../../../models/forecast.dart';
-import '../../../models/geocoding/location.dart';
-import '../../../models/weather.dart';
-import '../../../screens/currently_screen.dart';
-import '../../../screens/today_screen.dart';
-import '../../../screens/weekly_screen.dart';
+import '../../common/forecast.dart';
+import '../../common/location.dart';
+import '../screens/currently_screen.dart';
+import '../screens/today_screen.dart';
+import '../screens/weekly_screen.dart';
 
 class TabContentBuilder {
   /// Creates a subtitle text for a tab based on the current location

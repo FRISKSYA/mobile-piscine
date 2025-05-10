@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/geocoding/location.dart';
-import '../config/theme.dart';
+import '../../common/location.dart';
+import '../../../core/theme/app_theme.dart';
 
 /// Widget to display location search results
 class LocationSearchResults extends StatelessWidget {

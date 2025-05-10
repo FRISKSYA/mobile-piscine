@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../../models/weather.dart';
-import '../../../models/forecast.dart';
-import '../../../models/geocoding/location.dart';
-import '../../../config/constants.dart';
-import '../../../services/weather_service.dart';
-import '../../../utils/logger_service.dart';
-import '../../location/managers/location_manager.dart';
-import '../../search/managers/search_manager.dart';
+import '../common/forecast.dart';
+import '../common/location.dart';
+import '../weather/weather_service.dart';
+import '../../core/utils/logger_service.dart';
+import '../location/location_manager.dart';
+import '../search/search_manager.dart';
 
-class HomeViewModel {
+class HomeController {
   // Managers
   final LocationManager locationManager = LocationManager();
   final SearchManager searchManager = SearchManager();

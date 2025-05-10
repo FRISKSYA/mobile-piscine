@@ -1,7 +1,7 @@
 import 'package:geolocator/geolocator.dart';
-import '../../../services/location_service.dart';
+import 'location_service.dart';
 import 'package:flutter/material.dart';
-import '../../../utils/logger_service.dart';
+import '../../core/utils/logger_service.dart';
 
 class LocationManager {
   final LocationService _locationService = LocationService();

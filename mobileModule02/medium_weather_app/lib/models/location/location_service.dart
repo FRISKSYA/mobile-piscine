@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import '../utils/logger_service.dart';
+import '../../core/utils/logger_service.dart';
 
 /// A service to handle location-related operations
 class LocationService {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../config/theme.dart';
+import '../../../../core/theme/app_theme.dart';
 
 /// Reusable tab content widget
 class TabContent extends StatelessWidget {

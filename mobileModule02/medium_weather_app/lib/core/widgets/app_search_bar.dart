@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../config/theme.dart';
+import '../theme/app_theme.dart';
 
 /// Custom search bar with location button for the app bar
-class WeatherSearchBar extends StatelessWidget {
+class AppSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onLocationPressed;
   final ValueChanged<String>? onSubmitted;
@@ -10,7 +10,7 @@ class WeatherSearchBar extends StatelessWidget {
   final bool isSearching;
   final VoidCallback? onClearSearch;
 
-  const WeatherSearchBar({
+  const AppSearchBar({
     super.key,
     required this.controller,
     required this.onLocationPressed,
