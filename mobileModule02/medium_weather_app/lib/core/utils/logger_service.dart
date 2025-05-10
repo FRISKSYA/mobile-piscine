@@ -22,7 +22,7 @@ class LoggerService {
         lineLength: 120, // 行の最大長
         colors: true, // カラー表示の有効化
         printEmojis: true, // 絵文字の表示
-        printTime: true, // タイムスタンプの表示
+        dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart // タイムスタンプの表示
       ),
     );
   }

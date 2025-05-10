@@ -128,7 +128,9 @@ class HomeController {
       weatherData = WeatherData.mock();
     }
 
-    searchManager.onLocationSelected(location, context, searchController);
+    if (context.mounted) {
+      searchManager.onLocationSelected(location, context, searchController);
+    }
     isLoadingWeather = false;
   }
 
@@ -152,7 +154,9 @@ class HomeController {
       weatherData = WeatherData.mock();
     }
 
-    searchManager.onSearchSubmitted(location, context, searchController);
+    if (context.mounted) {
+      searchManager.onSearchSubmitted(location, context, searchController);
+    }
     isLoadingWeather = false;
   }
 

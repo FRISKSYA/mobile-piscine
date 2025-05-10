@@ -33,7 +33,7 @@ class LocationSearchResults extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(red: 0, green: 0, blue: 0, alpha: 26),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -65,7 +65,7 @@ class LocationSearchResults extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(red: 0, green: 0, blue: 0, alpha: 26),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -110,7 +110,7 @@ class LocationSearchResults extends StatelessWidget {
                 ),
                 if (location.population != null && location.population! > 0)
                   Text(
-                    '${_formatPopulation(location.population!)}',
+                    _formatPopulation(location.population!),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: isSmallScreen ? 10 : 12,

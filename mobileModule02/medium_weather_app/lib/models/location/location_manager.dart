@@ -30,42 +30,46 @@ class LocationManager {
     // Show loading state
     isLoadingLocation = true;
     isUsingGeolocation = true;
-    
+
     // Show a snackbar to indicate that we're getting the current location
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Getting current location...')),
-    );
-    
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Getting current location...')),
+      );
+    }
+
     try {
       // Check if location permission is granted
       bool hasPermission = await _locationService.isLocationPermissionGranted();
-      
+
       if (!hasPermission) {
         // Request permission if not granted
         hasPermission = await _locationService.requestLocationPermission();
-        
+
         if (!hasPermission) {
           locationPermissionDenied = true;
           isLoadingLocation = false;
           coordinatesText = '';
           currentLocation = 'Location permission denied';
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Location permission denied. Please enable it in app settings.'),
-              duration: Duration(seconds: 4),
-            ),
-          );
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Location permission denied. Please enable it in app settings.'),
+                duration: Duration(seconds: 4),
+              ),
+            );
+          }
           return;
         }
       }
-      
+
       // Get the current position
       Position position = await _locationService.getCurrentLocation();
-      
+
       // Format the position for display
       String formattedPosition = _locationService.formatPosition(position);
-      
+
       // Update the state with the current location
       coordinatesText = formattedPosition;
       currentLocation = 'Current Location';
@@ -75,11 +79,13 @@ class LocationManager {
       isLoadingLocation = false;
       coordinatesText = '';
       currentLocation = 'Error getting location';
-      
+
       // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error getting location: ${e.toString()}')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error getting location: ${e.toString()}')),
+        );
+      }
     }
   }
 }
