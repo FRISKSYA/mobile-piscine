@@ -306,15 +306,16 @@ class WeatherService {
       // Parse hourly forecast
       final List<HourlyForecast> hourlyForecasts = [];
       final hourlyTimes = data['hourly']['time'] as List;
-      
+
       for (int i = 0; i < hourlyTimes.length; i++) {
         final weatherCode = data['hourly']['weather_code'][i];
-        
+
         hourlyForecasts.add(HourlyForecast(
           time: DateTime.parse(hourlyTimes[i]),
           temperature: data['hourly']['temperature_2m'][i]?.toDouble() ?? 0.0,
           condition: _getWeatherCondition(weatherCode),
           iconCode: _getIconCode(weatherCode),
+          windSpeed: data['hourly']['wind_speed_10m']?[i]?.toDouble() ?? 0.0,
         ));
       }
       

@@ -55,12 +55,14 @@ class HourlyForecast {
   final double temperature;
   final String condition;
   final String iconCode;
+  final double windSpeed;
 
   HourlyForecast({
     required this.time,
     required this.temperature,
     required this.condition,
     required this.iconCode,
+    this.windSpeed = 0.0,
   });
 
   // Factory constructor to create HourlyForecast from API JSON
@@ -72,6 +74,7 @@ class HourlyForecast {
       temperature: 0.0,
       condition: '',
       iconCode: '',
+      windSpeed: 0.0,
     );
   }
 
@@ -82,6 +85,7 @@ class HourlyForecast {
       temperature: 22.0 + (hoursFromNow % 5),
       condition: 'Sunny',
       iconCode: '01d',
+      windSpeed: 3.0 + (hoursFromNow % 4),
     );
   }
 }

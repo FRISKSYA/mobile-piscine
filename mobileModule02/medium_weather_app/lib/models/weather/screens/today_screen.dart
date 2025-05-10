@@ -92,49 +92,76 @@ class TodayScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Time
-            SizedBox(
-              width: 60,
-              child: Text(
-                timeFormat.format(forecast.time),
-                style: TextStyle(
-                  fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
-                  fontWeight: FontWeight.bold,
+            Row(
+              children: [
+                // Time
+                SizedBox(
+                  width: 60,
+                  child: Text(
+                    timeFormat.format(forecast.time),
+                    style: TextStyle(
+                      fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
+
+                // Weather condition icon and text
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(
+                        _getWeatherIcon(forecast.condition),
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          forecast.condition,
+                          style: TextStyle(
+                            fontSize: AppTheme.getResponsiveFontSize(context, 0.035, maxSize: 14),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Temperature
+                Text(
+                  '${forecast.temperature.toStringAsFixed(1)}°C',
+                  style: TextStyle(
+                    fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
             ),
 
-            // Weather condition icon and text
-            Expanded(
+            // Wind speed row
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0, left: 60.0),
               child: Row(
                 children: [
                   Icon(
-                    _getWeatherIcon(forecast.condition),
-                    color: Theme.of(context).colorScheme.primary,
+                    Icons.air,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      forecast.condition,
-                      style: TextStyle(
-                        fontSize: AppTheme.getResponsiveFontSize(context, 0.035, maxSize: 14),
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                  const SizedBox(width: 4),
+                  Text(
+                    'Wind: ${forecast.windSpeed.toStringAsFixed(1)} km/h',
+                    style: TextStyle(
+                      fontSize: AppTheme.getResponsiveFontSize(context, 0.035, maxSize: 14),
+                      color: Colors.grey[700],
                     ),
                   ),
                 ],
-              ),
-            ),
-
-            // Temperature
-            Text(
-              '${forecast.temperature.toStringAsFixed(1)}°C',
-              style: TextStyle(
-                fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ],
