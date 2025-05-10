@@ -43,6 +43,29 @@ Open-Meteoの天気予報APIを使用して、以下の情報を各タブに表�
   - 最高気温と最低気温（摂氏）
   - 天気の説明（アイコンと説明）
 
+## 新機能：Open-Meteo API統合
+
+Open-Meteoの無料APIを利用して、実際の天気データを取得・表示する機能を実装しました：
+
+### WeatherServiceの実装
+- **APIエンドポイント**: `https://api.open-meteo.com/v1/forecast`
+- **取得データ**:
+  - 現在の天気: 気温、湿度、体感温度、降水量、天気コード、風速
+  - 時間ごとの予報: 24時間分の同様のデータ
+  - 日ごとの予報: 7日分の最高/最低気温、天気コード、降水量の合計
+
+### 天気コードの変換
+- Open-MeteoのWMO天気コードを、人間が読みやすい説明（「晴れ」「曇り」など）に変換
+- 天気コードに基づいて適切なアイコンを表示
+
+### エラー処理とフォールバック
+- ネットワークエラーや無効な位置情報に対処するためのエラー処理を実装
+- API呼び出しに失敗した場合、モックデータをフォールバックとして表示
+
+### ロギング機能
+- print文からloggerServigeへの移行により、より構造化されたログ出力
+- 各種操作（API呼び出し、エラーなど）をログレベルに応じて記録
+
 ## ディレクトリ構造
 
 ```
@@ -333,6 +356,93 @@ Widget _buildDailyForecastItem(BuildContext context, DailyForecast forecast, int
 }
 ```
 
+## API統合の実装
+
+アプリケーションは、Open-Meteo APIとの統合を通じて実際の天気データを取得し表示します。
+
+### WeatherService
+天気APIとの通信を担当するサービスクラスです：
+
+```dart
+class WeatherService {
+  // Open-Meteo API URLs
+  static const String _weatherApiUrl = 'https://api.open-meteo.com/v1/forecast';
+
+  // Weather variables to request
+  static const List<String> _weatherVariables = [
+    'temperature_2m',
+    'relative_humidity_2m',
+    'apparent_temperature',
+    'precipitation',
+    'weather_code',
+    'wind_speed_10m',
+  ];
+
+  /// 都市名から天気データを取得
+  Future<WeatherData> getWeatherData(String locationName) async {
+    // 1. GeocodingServiceで座標を取得
+    // 2. 座標を使って天気データを取得
+  }
+
+  /// 座標から天気データを取得
+  Future<WeatherData> getWeatherByCoordinates(double latitude,
+      double longitude, String locationName) async {
+    // APIエンドポイントに座標と必要なパラメータを渡してデータを取得
+  }
+}
+```
+
+### HomeViewModel
+ユーザー入力と表示データを連携させるViewModel：
+
+```dart
+class HomeViewModel {
+  // Services
+  final WeatherService weatherService = WeatherService();
+
+  // Weather data
+  WeatherData? weatherData;
+  bool isLoadingWeather = false;
+
+  // 位置選択時の処理
+  Future<void> onLocationSelected(Location location, BuildContext context) async {
+    // 1. 選択された位置情報を保存
+    // 2. その位置の天気データを取得
+    weatherData = await weatherService.getWeatherByCoordinates(
+      location.latitude,
+      location.longitude,
+      location.displayName
+    );
+  }
+}
+```
+
+### TabContentBuilder
+ViewModelからのデータを画面表示用に変換：
+
+```dart
+class TabContentBuilder {
+  /// タブの内容を構築
+  static List<Widget> buildTabContents({
+    // Location info
+    required String currentLocation,
+    // Weather data
+    WeatherData? weatherData,
+    // Other params...
+  }) {
+    // 取得した天気データまたはフォールバックのモックデータを使用
+    final WeatherData data = weatherData ?? WeatherData.mock();
+
+    return [
+      // 各タブに適切なデータを渡す
+      CurrentlyScreen(weather: data.current, ...),
+      TodayScreen(hourlyForecasts: data.hourly, ...),
+      WeeklyScreen(dailyForecasts: data.daily, ...),
+    ];
+  }
+}
+```
+
 ## アーキテクチャの特徴
 
 このアプリケーションは以下のアーキテクチャパターンに従っています：
@@ -346,20 +456,24 @@ Widget _buildDailyForecastItem(BuildContext context, DailyForecast forecast, int
 ## データの流れ
 
 1. 位置情報の選択（検索または現在地）→ HomeViewModel.selectedLocation に保存
-2. HomeViewModel → TabContentBuilder → 各スクリーン へと位置情報が伝達される
-3. 各スクリーンでは受け取った位置情報を表示し、対応する天気データをモックして表示
+2. 選択された位置情報を使用してWeatherServiceでAPI呼び出し → 天気データを取得
+3. 取得した天気データをHomeViewModel.weatherDataに保存
+4. HomeViewModel → TabContentBuilder → 各スクリーン へと位置情報と天気データが伝達される
+5. 各スクリーンでは受け取った位置情報と天気データを表示
 
 ## 今後の拡張予定
 
 このプロジェクト構造は、以下のような将来の拡張を見据えています：
 
-1. **実際の天気API統合**: 取得した座標や検索した場所の実際の天気データを取得・表示する機能。
+1. **APIレスポンスのキャッシュ**: ネットワーク呼び出しを減らすためのローカルキャッシュ機能。
 2. **座標から都市名の取得**: 現在の座標からリバースジオコーディングを行い、都市名を表示する機能。
-3. **位置情報の精度向上**: 位置情報の精度を向上させるための設定やオプションの追加。
-4. **状態管理の強化**: より複雑なアプリケーション状態を管理するためのProviderやBlocパターンの導入。
-5. **ユニットテストの追加**: 各コンポーネントの動作を検証するためのテストコードの追加。
-6. **パフォーマンス最適化**: 大量のデータを扱う場合のパフォーマンス向上のための最適化。
-7. **UI/UXの改善**: 天気データをより視覚的に分かりやすく表示するためのデザイン改善。
+3. **より詳細な天気情報**: 気圧、視界、紫外線指数などの追加データの表示。
+4. **通知機能**: 悪天候の警告や毎日の天気予報通知機能。
+5. **状態管理の強化**: より複雑なアプリケーション状態を管理するためのProviderやBlocパターンの導入。
+6. **ユニットテストの追加**: 各コンポーネントの動作を検証するためのテストコードの追加。
+7. **パフォーマンス最適化**: 大量のデータを扱う場合のパフォーマンス向上のための最適化。
+8. **UI/UXの改善**: 天気データをより視覚的に分かりやすく表示するためのデザイン改善。
+9. **オフライン対応**: インターネット接続がない場合の最後の取得データ表示機能。
 
 ## 新機能の詳細：Open-Meteo APIによる都市検索
 

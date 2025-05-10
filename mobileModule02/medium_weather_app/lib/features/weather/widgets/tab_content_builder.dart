@@ -22,32 +22,37 @@ class TabContentBuilder {
     required String coordinatesText,
     required bool isLoadingLocation,
     Location? selectedLocation,
+    WeatherData? weatherData,
+    bool isLoadingWeather = false,
   }) {
-    // Generate mock weather data
-    final weatherData = WeatherData.mock();
+    // Use provided weather data or fallback to mock if not available
+    final WeatherData data = weatherData ?? WeatherData.mock();
+
+    // Show loading if either location or weather data is being loaded
+    final bool isLoading = isLoadingLocation || isLoadingWeather;
 
     return [
       // Currently tab content
-      isLoadingLocation
+      isLoading
           ? _buildLoadingTab()
           : CurrentlyScreen(
-              weather: weatherData.current,
+              weather: data.current,
               location: selectedLocation,
             ),
 
       // Today tab content
-      isLoadingLocation
+      isLoading
           ? _buildLoadingTab()
           : TodayScreen(
-              hourlyForecasts: weatherData.hourly,
+              hourlyForecasts: data.hourly,
               location: selectedLocation,
             ),
 
       // Weekly tab content
-      isLoadingLocation
+      isLoading
           ? _buildLoadingTab()
           : WeeklyScreen(
-              dailyForecasts: weatherData.daily,
+              dailyForecasts: data.daily,
               location: selectedLocation,
             ),
     ];

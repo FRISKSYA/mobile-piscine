@@ -36,7 +36,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         title: WeatherSearchBar(
           controller: _viewModel.searchController,
           onLocationPressed: () => _onLocationPressed(context),
-          onSubmitted: (location) => _viewModel.onSearchSubmitted(location, context),
+          onSubmitted: (location) async {
+            await _viewModel.onSearchSubmitted(location, context);
+            setState(() {});
+          },
           onChanged: (value) => setState(() {}), // Update UI when text changes
           isSearching: _viewModel.searchManager.isSearching,
           onClearSearch: _viewModel.searchManager.clearSearchResults,
@@ -53,6 +56,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 coordinatesText: _viewModel.locationManager.coordinatesText,
                 isLoadingLocation: _viewModel.locationManager.isLoadingLocation,
                 selectedLocation: _viewModel.selectedLocation,
+                weatherData: _viewModel.weatherData,
+                isLoadingWeather: _viewModel.isLoadingWeather,
               ),
             ),
           ),
@@ -84,8 +89,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   // Handle location selection from search results
-  void _onLocationSelected(location, BuildContext context) {
-    _viewModel.onLocationSelected(location, context);
+  Future<void> _onLocationSelected(location, BuildContext context) async {
+    await _viewModel.onLocationSelected(location, context);
     // Update UI after location is selected
     setState(() {});
   }
