@@ -64,20 +64,24 @@ class SearchManager {
     searchController.clear();
 
     // Show a snackbar to indicate that we're fetching the weather
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Getting weather for ${location.name}...')),
-    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Getting weather for ${location.name}...')),
+      );
+    }
   }
 
   // Handle search submission
   void onSearchSubmitted(String location, BuildContext context, TextEditingController searchController) {
     if (location.isEmpty) return;
-    
+
     // Show a snackbar to indicate that we're searching for the weather
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Searching for weather in $location...')),
-    );
-    
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Searching for weather in $location...')),
+      );
+    }
+
     // Clear the search field
     searchController.clear();
   }

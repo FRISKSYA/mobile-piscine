@@ -5,6 +5,21 @@ import '../common/forecast.dart';
 import '../../core/utils/logger_service.dart';
 import '../location/geocoding_service.dart';
 
+/// Result class that includes weather data and error information
+class WeatherResult {
+  final WeatherData data;
+  final bool locationFound;
+  final bool connectionError;
+  final String errorMessage;
+
+  WeatherResult({
+    required this.data,
+    this.locationFound = true,
+    this.connectionError = false,
+    this.errorMessage = '',
+  });
+}
+
 /// Service class for weather API integration using Open-Meteo API
 class WeatherService {
   // Open-Meteo API base URLs
@@ -23,10 +38,10 @@ class WeatherService {
   /// Get current weather for a location
   Future<Weather> getCurrentWeather(String locationName) async {
     loggerService.i('Getting current weather for: $locationName');
-    
+
     try {
-      final weatherData = await getWeatherData(locationName);
-      return weatherData.current;
+      final result = await getWeatherData(locationName);
+      return result.data.current;
     } catch (e) {
       loggerService.e('Error getting current weather', e);
       // Return mock data as fallback
@@ -37,16 +52,16 @@ class WeatherService {
   /// Get hourly forecast for today
   Future<List<HourlyForecast>> getHourlyForecast(String locationName) async {
     loggerService.i('Getting hourly forecast for: $locationName');
-    
+
     try {
-      final weatherData = await getWeatherData(locationName);
-      
+      final result = await getWeatherData(locationName);
+
       // Filter only today's forecasts
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final tomorrow = today.add(const Duration(days: 1));
-      
-      return weatherData.hourly.where((forecast) {
+
+      return result.data.hourly.where((forecast) {
         return forecast.time.isAfter(now) && forecast.time.isBefore(tomorrow);
       }).toList();
     } catch (e) {
@@ -59,10 +74,10 @@ class WeatherService {
   /// Get daily forecast for the week
   Future<List<DailyForecast>> getDailyForecast(String locationName) async {
     loggerService.i('Getting daily forecast for: $locationName');
-    
+
     try {
-      final weatherData = await getWeatherData(locationName);
-      return weatherData.daily;
+      final result = await getWeatherData(locationName);
+      return result.data.daily;
     } catch (e) {
       loggerService.e('Error getting daily forecast', e);
       // Return mock data as fallback
@@ -71,7 +86,7 @@ class WeatherService {
   }
 
   /// Get complete weather data for a location
-  Future<WeatherData> getWeatherData(String locationName) async {
+  Future<WeatherResult> getWeatherData(String locationName) async {
     loggerService.i('Getting complete weather data for: $locationName');
 
     try {
@@ -84,42 +99,76 @@ class WeatherService {
         final location = geocodingResponse.results[0];
         loggerService.d('Found location: ${location.name} at ${location.latitude}, ${location.longitude}');
 
-        // 2. Call the _fetchWeatherByCoordinates method with these coordinates
-        return await _fetchWeatherByCoordinates(
-          location.latitude,
-          location.longitude,
-          location.displayName
-        );
+        try {
+          // 2. Call the _fetchWeatherByCoordinates method with these coordinates
+          final weatherData = await _fetchWeatherByCoordinates(
+            location.latitude,
+            location.longitude,
+            location.displayName
+          );
+          return WeatherResult(
+            data: weatherData,
+            locationFound: true,
+            connectionError: false,
+          );
+        } catch (e) {
+          // API connection error
+          loggerService.e('Error fetching weather data', e);
+          return WeatherResult(
+            data: WeatherData.mock(),
+            locationFound: true,
+            connectionError: true,
+            errorMessage: 'Cannot connect to weather service. Check your internet connection.'
+          );
+        }
       } else {
         loggerService.w('No locations found for: $locationName');
-        // Return mock data as fallback
-        return WeatherData.mock();
+        // City not found
+        return WeatherResult(
+          data: WeatherData.mock(),
+          locationFound: false,
+          errorMessage: 'City "$locationName" not found'
+        );
       }
     } catch (e) {
       loggerService.e('Error getting weather data', e);
-      // Return mock data as fallback
-      loggerService.d('Returning mock weather data bundle');
-      return WeatherData.mock();
+      // General error or connection error to Geocoding API
+      return WeatherResult(
+        data: WeatherData.mock(),
+        locationFound: false,
+        connectionError: true,
+        errorMessage: 'Cannot connect to location service. Check your internet connection.'
+      );
     }
   }
 
   /// Get weather for the current location
-  Future<WeatherData> getCurrentLocationWeather(double latitude, double longitude) async {
+  Future<WeatherResult> getCurrentLocationWeather(double latitude, double longitude) async {
     return await getWeatherByCoordinates(latitude, longitude, 'Current Location');
   }
 
   /// Get weather data by coordinates - public method
-  Future<WeatherData> getWeatherByCoordinates(double latitude, double longitude, String locationName) async {
+  Future<WeatherResult> getWeatherByCoordinates(double latitude, double longitude, String locationName) async {
     try {
-      return await _fetchWeatherByCoordinates(
+      final weatherData = await _fetchWeatherByCoordinates(
         latitude,
         longitude,
         locationName
       );
+      return WeatherResult(
+        data: weatherData,
+        locationFound: true,
+        connectionError: false,
+      );
     } catch (e) {
       loggerService.e('Error getting weather for coordinates', e);
       // Return mock data as fallback
-      return WeatherData.mock();
+      return WeatherResult(
+        data: WeatherData.mock(),
+        locationFound: true,
+        connectionError: true,
+        errorMessage: 'Cannot connect to weather service. Check your internet connection.'
+      );
     }
   }
   

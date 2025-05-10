@@ -44,7 +44,8 @@ class HomeController {
     isLoadingWeather = true;
     try {
       // Default to Tokyo if no location is selected
-      weatherData = await weatherService.getWeatherData('Tokyo');
+      final result = await weatherService.getWeatherData('Tokyo');
+      weatherData = result.data;
       loggerService.i('Loaded default weather data');
     } catch (e) {
       loggerService.e('Error loading default weather data', e);
@@ -75,6 +76,13 @@ class HomeController {
     isLoadingWeather = true;
 
     await locationManager.getCurrentLocation(context);
+
+    // Check if context is still valid after the async operation
+    if (!context.mounted) {
+      isLoadingWeather = false;
+      return;
+    }
+
     // Reset selected location when using device location
     selectedLocation = null;
 
@@ -90,12 +98,31 @@ class HomeController {
           final longitude = double.parse(latLongMatch.group(2)!);
 
           // Get weather data for current location
-          weatherData = await weatherService.getCurrentLocationWeather(latitude, longitude);
-          loggerService.i('Loaded weather data for current location');
+          final result = await weatherService.getCurrentLocationWeather(latitude, longitude);
+          weatherData = result.data;
+
+          // Show error message if there's a connection issue
+          if (result.connectionError && context.mounted) {
+            _showConnectionError(
+              context,
+              result.errorMessage,
+              () => getCurrentLocation(context)
+            );
+          } else {
+            loggerService.i('Loaded weather data for current location');
+          }
         }
       } catch (e) {
         loggerService.e('Error getting weather for current location', e);
         weatherData = WeatherData.mock();
+
+        if (context.mounted) {
+          _showConnectionError(
+            context,
+            'Error getting weather data. Please try again later.',
+            () => getCurrentLocation(context)
+          );
+        }
       }
     }
 
@@ -111,27 +138,72 @@ class HomeController {
     locationManager.isUsingGeolocation = false;
     locationManager.coordinatesText = '${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)}';
 
+    // Check if context is still valid
+    if (!context.mounted) {
+      isLoadingWeather = false;
+      return;
+    }
+
     // Store the selected location object to display in weather screens
     selectedLocation = location;
 
     // Get weather data for the selected location
     try {
       // Use the location coordinates directly since we already have them
-      weatherData = await weatherService.getWeatherByCoordinates(
+      final result = await weatherService.getWeatherByCoordinates(
         location.latitude,
         location.longitude,
         location.displayName
       );
-      loggerService.i('Loaded weather data for ${location.name}');
+
+      weatherData = result.data;
+
+      // Show error message if there's a connection issue
+      if (result.connectionError && context.mounted) {
+        _showConnectionError(
+          context,
+          result.errorMessage,
+          () => onLocationSelected(location, context)
+        );
+      } else {
+        loggerService.i('Loaded weather data for ${location.name}');
+      }
     } catch (e) {
       loggerService.e('Error getting weather for location ${location.name}', e);
       weatherData = WeatherData.mock();
+
+      if (context.mounted) {
+        _showConnectionError(
+          context,
+          'Error getting weather data for ${location.name}. Please try again later.',
+          () => onLocationSelected(location, context)
+        );
+      }
     }
 
     if (context.mounted) {
       searchManager.onLocationSelected(location, context, searchController);
     }
     isLoadingWeather = false;
+  }
+
+  // Helper method to show connection error message with retry option
+  void _showConnectionError(BuildContext context, String errorMessage, Function() retryAction) {
+    // Already contains a context.mounted check - no need to add another one
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          duration: const Duration(seconds: 8),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: retryAction,
+            textColor: Colors.white,
+          ),
+        ),
+      );
+    }
   }
 
   // Handle search submission
@@ -142,16 +214,58 @@ class HomeController {
     locationManager.currentLocation = location;
     locationManager.isUsingGeolocation = false;
 
+    // Check if context is still valid
+    if (!context.mounted) {
+      isLoadingWeather = false;
+      return;
+    }
+
     // Get weather data for the submitted location
     try {
-      weatherData = await weatherService.getWeatherData(location);
-      loggerService.i('Loaded weather data for search query: $location');
+      final result = await weatherService.getWeatherData(location);
+      weatherData = result.data;
+
+      // Check if the location was found
+      if (!result.locationFound) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('City "$location" not found. Please enter a valid city name.'),
+              duration: const Duration(seconds: 8),
+              backgroundColor: Colors.orange,
+              action: SnackBarAction(
+                label: 'Dismiss',
+                onPressed: () {},
+              ),
+            ),
+          );
+        }
+      } else if (result.connectionError) {
+        // Show connection error with retry option
+        if (context.mounted) {
+          _showConnectionError(
+            context,
+            result.errorMessage,
+            () => onSearchSubmitted(location, context)
+          );
+        }
+      } else {
+        loggerService.i('Loaded weather data for search query: $location');
+      }
 
       // Reset selected location since this is a direct search
       selectedLocation = null;
     } catch (e) {
       loggerService.e('Error getting weather for search query: $location', e);
       weatherData = WeatherData.mock();
+
+      if (context.mounted) {
+        _showConnectionError(
+          context,
+          'Error getting weather data. Please try again later.',
+          () => onSearchSubmitted(location, context)
+        );
+      }
     }
 
     if (context.mounted) {

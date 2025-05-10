@@ -392,9 +392,24 @@ Widget _buildDailyForecastItem(BuildContext context, DailyForecast forecast, int
 アプリケーションは、Open-Meteo APIとの統合を通じて実際の天気データを取得し表示します。
 
 ### models/weather/weather_service.dart
-天気APIとの通信を担当するサービスクラスです：
+天気APIとの通信を担当するサービスクラスと、データとエラー情報を持つWeatherResultクラスです：
 
 ```dart
+/// エラー情報を含む天気データの結果クラス
+class WeatherResult {
+  final WeatherData data;
+  final bool locationFound;
+  final bool connectionError;
+  final String errorMessage;
+
+  WeatherResult({
+    required this.data,
+    this.locationFound = true,
+    this.connectionError = false,
+    this.errorMessage = '',
+  });
+}
+
 class WeatherService {
   // Open-Meteo API URLs
   static const String _weatherApiUrl = 'https://api.open-meteo.com/v1/forecast';
@@ -410,15 +425,80 @@ class WeatherService {
   ];
 
   /// 都市名から天気データを取得
-  Future<WeatherData> getWeatherData(String locationName) async {
-    // 1. GeocodingServiceで座標を取得
-    // 2. 座標を使って天気データを取得
+  Future<WeatherResult> getWeatherData(String locationName) async {
+    try {
+      // 1. GeocodingServiceで座標を取得
+      final geocodingResponse = await GeocodingService.searchLocation(query: locationName);
+
+      // 位置情報が見つかったかチェック
+      if (geocodingResponse.results.isNotEmpty) {
+        // 位置情報を使って天気データを取得
+        try {
+          final weatherData = await _fetchWeatherByCoordinates(
+            geocodingResponse.results[0].latitude,
+            geocodingResponse.results[0].longitude,
+            geocodingResponse.results[0].displayName
+          );
+
+          // 成功時は正常なデータを返す
+          return WeatherResult(
+            data: weatherData,
+            locationFound: true,
+            connectionError: false,
+          );
+        } catch (e) {
+          // 天気APIへの接続エラー
+          return WeatherResult(
+            data: WeatherData.mock(),
+            locationFound: true,
+            connectionError: true,
+            errorMessage: 'Cannot connect to weather service. Check your internet connection.'
+          );
+        }
+      } else {
+        // 都市が見つからなかった場合
+        return WeatherResult(
+          data: WeatherData.mock(),
+          locationFound: false,
+          errorMessage: 'City "$locationName" not found'
+        );
+      }
+    } catch (e) {
+      // ジオコーディングAPIへの接続エラー
+      return WeatherResult(
+        data: WeatherData.mock(),
+        locationFound: false,
+        connectionError: true,
+        errorMessage: 'Cannot connect to location service. Check your internet connection.'
+      );
+    }
   }
 
   /// 座標から天気データを取得
-  Future<WeatherData> getWeatherByCoordinates(double latitude,
-      double longitude, String locationName) async {
-    // APIエンドポイントに座標と必要なパラメータを渡してデータを取得
+  Future<WeatherResult> getWeatherByCoordinates(
+      double latitude, double longitude, String locationName) async {
+    try {
+      // APIエンドポイントに座標と必要なパラメータを渡してデータを取得
+      final weatherData = await _fetchWeatherByCoordinates(
+        latitude,
+        longitude,
+        locationName
+      );
+
+      return WeatherResult(
+        data: weatherData,
+        locationFound: true,
+        connectionError: false,
+      );
+    } catch (e) {
+      // API接続エラー
+      return WeatherResult(
+        data: WeatherData.mock(),
+        locationFound: true,
+        connectionError: true,
+        errorMessage: 'Cannot connect to weather service. Check your internet connection.'
+      );
+    }
   }
 }
 ```
@@ -435,15 +515,60 @@ class HomeController {
   WeatherData? weatherData;
   bool isLoadingWeather = false;
 
+  // エラーメッセージ表示用のヘルパーメソッド
+  void _showConnectionError(BuildContext context, String errorMessage, Function() retryAction) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          duration: const Duration(seconds: 8),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: retryAction,
+            textColor: Colors.white,
+          ),
+        ),
+      );
+    }
+  }
+
   // 位置選択時の処理
   Future<void> onLocationSelected(Location location, BuildContext context) async {
+    isLoadingWeather = true;
+
     // 1. 選択された位置情報を保存
+    locationManager.currentLocation = location.name;
+
     // 2. その位置の天気データを取得
-    weatherData = await weatherService.getWeatherByCoordinates(
-      location.latitude,
-      location.longitude,
-      location.displayName
-    );
+    try {
+      final result = await weatherService.getWeatherByCoordinates(
+        location.latitude,
+        location.longitude,
+        location.displayName
+      );
+
+      weatherData = result.data;
+
+      // エラー処理
+      if (result.connectionError && context.mounted) {
+        _showConnectionError(
+          context,
+          result.errorMessage,
+          () => onLocationSelected(location, context)
+        );
+      }
+    } catch (e) {
+      // 例外処理
+      weatherData = WeatherData.mock();
+      _showConnectionError(
+        context,
+        'Error getting weather data. Please try again later.',
+        () => onLocationSelected(location, context)
+      );
+    }
+
+    isLoadingWeather = false;
   }
 }
 ```
@@ -474,6 +599,37 @@ class TabContentBuilder {
 }
 ```
 
+## エラー処理の特徴
+
+アプリケーションには以下のエラー処理機能が実装されています：
+
+1. **無効な都市名の処理**:
+   - ユーザーが存在しない都市名を入力した場合、「City "XXX" not found. Please enter a valid city name.」というメッセージが表示されます
+   - このメッセージは8秒間表示され、「Dismiss」ボタンでも閉じることができます
+   - その間もアプリケーションは操作可能で、デフォルトのモックデータが表示されます
+
+2. **API接続エラーの処理と再試行機能**:
+   - 天気情報APIやジオコーディングAPIへの接続が失敗した場合、エラーメッセージが表示されます
+   - 「Cannot connect to weather service. Check your internet connection.」のようなメッセージがユーザーに通知されます
+   - **新機能**: 「Retry」ボタンが表示され、ユーザーはワンタップで操作を再試行できます
+   - 再試行機能は、都市検索、位置情報取得、候補選択などすべてのネットワーク操作に実装されています
+   - エラー状態でもアプリケーションはクラッシュせず、モックデータを表示して機能し続けます
+
+3. **結果クラスを用いたエラー状態の伝達**:
+   - `WeatherResult` クラスを使用し、データだけでなくエラー状態や詳細なエラーメッセージも含めて返します
+   - エラーの種類（都市が見つからない、接続エラーなど）を区別し、適切なユーザーフィードバックを提供します
+   - エラー情報は一箇所（WeatherResult）に集約され、UIとの連携が容易になっています
+
+4. **視覚的フィードバックの区別**:
+   - エラーの種類に応じて異なる色のSnackBarが表示されます
+   - 都市が見つからないエラー: オレンジ色 - 警告レベルのエラーとして表示
+   - 接続エラー: 赤色 - 重大なエラーとして表示
+   - 各エラーには適切なアクションボタン（Dismiss または Retry）が付属しています
+
+5. **位置情報の権限エラー処理**:
+   - ユーザーが位置情報へのアクセスを拒否した場合、適切なメッセージを表示します
+   - 位置情報が利用できなくても、手動での都市検索が常に利用可能です
+
 ## アーキテクチャの特徴
 
 このアプリケーションは以下のアーキテクチャパターンに従っています：
@@ -483,6 +639,12 @@ class TabContentBuilder {
 3. **メソッドの分割**: 大きな関数を小さなヘルパーメソッドに分割し、コードの可読性と保守性を高めています。
 4. **レスポンシブデザイン**: 様々な画面サイズに対応するためのヘルパーメソッドが組み込まれています。
 5. **データフロー管理**: Controllerを通じて選択された位置情報が各タブに伝達される仕組みを実装しています。
+6. **堅牢なエラーハンドリング**:
+   - アプリケーションは様々なエラーシナリオに対処し、ユーザーに明確なフィードバックを提供します
+   - `WeatherResult`クラスによるエラー状態のカプセル化を行い、一貫したエラー処理を実現
+   - 共通の`_showConnectionError`ヘルパーメソッドを使用してエラー表示を統一化
+   - ユーザーフレンドリーなエラーメッセージと、再試行オプションを提供し、ユーザー体験を向上
+7. **フォールバックメカニズム**: ネットワークエラーが発生した場合でも、モックデータを使用してアプリケーションの継続的な機能を保証します。
 
 ## データの流れ
 
@@ -505,6 +667,8 @@ class TabContentBuilder {
 7. **パフォーマンス最適化**: 大量のデータを扱う場合のパフォーマンス向上のための最適化。
 8. **UI/UXの改善**: 天気データをより視覚的に分かりやすく表示するためのデザイン改善。
 9. **オフライン対応**: インターネット接続がない場合の最後の取得データ表示機能。
+10. **さらなるエラー処理の拡張**: 様々なエッジケースを処理するためのエラーハンドリングの充実化。
+11. **ユーザー設定**: 温度単位（摂氏/華氏）やデータ更新頻度などのカスタマイズ機能。
 
 ## 新機能の詳細：Open-Meteo APIによる都市検索
 

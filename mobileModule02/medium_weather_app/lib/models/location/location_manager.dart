@@ -80,7 +80,7 @@ class LocationManager {
       coordinatesText = '';
       currentLocation = 'Error getting location';
 
-      // Show error message
+      // Show error message only if context is still mounted
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error getting location: ${e.toString()}')),
