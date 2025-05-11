@@ -72,7 +72,7 @@ class HomeController {
       loggerService.i('Loaded default weather data');
     } catch (e) {
       loggerService.e('Error loading default weather data', e);
-      // Return null on error (no fallback)
+      // Return null on error
       weatherData = null;
     } finally {
       isLoadingWeather = false;

@@ -36,17 +36,4 @@ class Weather {
     );
   }
 
-  // Create a mock weather object for testing
-  factory Weather.mock() {
-    return Weather(
-      temperature: 22.5,
-      condition: 'Cloudy',
-      iconCode: '03d',
-      feelsLike: 24.0,
-      humidity: 65,
-      windSpeed: 5.2,
-      time: DateTime.now(),
-      location: 'Tokyo, Japan',
-    );
-  }
 }

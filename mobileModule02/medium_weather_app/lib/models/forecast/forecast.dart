@@ -35,18 +35,6 @@ class DailyForecast {
     );
   }
 
-  // Create a mock forecast for testing
-  factory DailyForecast.mock(int daysFromNow) {
-    return DailyForecast(
-      date: DateTime.now().add(Duration(days: daysFromNow)),
-      minTemp: 18.0 + daysFromNow,
-      maxTemp: 26.0 + daysFromNow,
-      condition: 'Partly Cloudy',
-      iconCode: '02d',
-      humidity: 60,
-      windSpeed: 4.5,
-    );
-  }
 }
 
 /// Model class for hourly forecast data
@@ -78,16 +66,6 @@ class HourlyForecast {
     );
   }
 
-  // Create a mock hourly forecast for testing
-  factory HourlyForecast.mock(int hoursFromNow) {
-    return HourlyForecast(
-      time: DateTime.now().add(Duration(hours: hoursFromNow)),
-      temperature: 22.0 + (hoursFromNow % 5),
-      condition: 'Sunny',
-      iconCode: '01d',
-      windSpeed: 3.0 + (hoursFromNow % 4),
-    );
-  }
 }
 
 /// Wrapper class that contains all weather data
@@ -102,12 +80,4 @@ class WeatherData {
     required this.daily,
   });
 
-  // Create mock weather data for testing
-  factory WeatherData.mock() {
-    return WeatherData(
-      current: Weather.mock(),
-      hourly: List.generate(24, (index) => HourlyForecast.mock(index)),
-      daily: List.generate(7, (index) => DailyForecast.mock(index)),
-    );
-  }
 }
