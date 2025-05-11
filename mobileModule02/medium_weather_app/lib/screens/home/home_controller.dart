@@ -35,6 +35,23 @@ class HomeController {
     // Set default tab to "Currently" (index 0)
     tabController.index = 0;
 
+    // Add tab controller listener to check connection state on tab change
+    tabController.addListener(() {
+      // Clear search-related errors when changing tabs
+      if (isLocationNotFound) {
+        isLocationNotFound = false;
+
+        // If no connection error exists, clear the error banner completely
+        if (!weatherService.hasConnectionError) {
+          hasError = false;
+          errorMessage = '';
+        }
+      }
+
+      // Check if we need to show connection errors
+      checkConnectionState();
+    });
+
     // Initialize with default weather data (Tokyo)
     _loadDefaultWeatherData();
 
@@ -79,10 +96,43 @@ class HomeController {
 
   // Reset error states
   void clearError() {
-    hasError = false;
-    errorMessage = '';
+    // Always clear location not found errors as they should not persist
     isLocationNotFound = false;
-    isConnectionError = false;
+
+    // Clear connection errors only if the global connection state is restored
+    if (!weatherService.hasConnectionError) {
+      hasError = false;
+      errorMessage = '';
+      isConnectionError = false;
+    } else {
+      // Keep connection error visible
+      hasError = true;
+      isConnectionError = true;
+      errorMessage = weatherService.connectionErrorMessage;
+    }
+  }
+
+  // Check connection state and update UI accordingly
+  void checkConnectionState() {
+    // Update the UI to reflect the current global connection state
+    if (weatherService.hasConnectionError) {
+      // Only update if we don't have a location not found error
+      // This ensures location not found errors remain visible and aren't
+      // immediately replaced by connection errors
+      if (!isLocationNotFound) {
+        hasError = true;
+        isConnectionError = true;
+        errorMessage = weatherService.connectionErrorMessage;
+      }
+    } else if (isConnectionError) {
+      // Clear connection error if it was restored
+      isConnectionError = false;
+      // Only clear the error banner if no other errors are present
+      if (!isLocationNotFound) {
+        hasError = false;
+        errorMessage = '';
+      }
+    }
   }
 
   // Get the current location

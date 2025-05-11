@@ -25,6 +25,10 @@ class WeatherService {
   // Open-Meteo API base URLs
   static const String _weatherApiUrl = 'https://api.open-meteo.com/v1/forecast';
 
+  // Global connection error state
+  bool hasConnectionError = false;
+  String connectionErrorMessage = '';
+
   // Weather variables to request from the API
   static const List<String> _weatherVariables = [
     'temperature_2m',
@@ -93,6 +97,22 @@ class WeatherService {
       // 1. Use GeocodingService to get location coordinates from the name (static method)
       final geocodingResponse = await GeocodingService.searchLocation(query: locationName);
 
+      // Check if there was a connection error with the geocoding service
+      if (geocodingResponse.connectionError || GeocodingService.hasConnectionError) {
+        // Use the static connection error information from GeocodingService
+        hasConnectionError = true;
+        connectionErrorMessage = GeocodingService.connectionErrorMessage.isNotEmpty
+            ? GeocodingService.connectionErrorMessage
+            : 'Cannot connect to location service. Check your internet connection.';
+
+        return WeatherResult(
+          data: WeatherData.mock(),
+          locationFound: false,
+          connectionError: true,
+          errorMessage: connectionErrorMessage
+        );
+      }
+
       // Check if we have any results
       if (geocodingResponse.results.isNotEmpty) {
         // Get the first location
@@ -106,6 +126,9 @@ class WeatherService {
             location.longitude,
             location.displayName
           );
+          // Clear connection error state on success
+          hasConnectionError = false;
+          connectionErrorMessage = '';
           return WeatherResult(
             data: weatherData,
             locationFound: true,
@@ -114,16 +137,20 @@ class WeatherService {
         } catch (e) {
           // API connection error
           loggerService.e('Error fetching weather data', e);
+          // Set global connection error state
+          hasConnectionError = true;
+          connectionErrorMessage = 'Cannot connect to weather service. Check your internet connection.';
           return WeatherResult(
             data: WeatherData.mock(),
             locationFound: true,
             connectionError: true,
-            errorMessage: 'Cannot connect to weather service. Check your internet connection.'
+            errorMessage: connectionErrorMessage
           );
         }
       } else {
         loggerService.w('No locations found for: $locationName');
-        // City not found
+        // Not a connection error, so don't set the global connection error state
+        // City not found error should not persist across screens
         return WeatherResult(
           data: WeatherData.mock(),
           locationFound: false,
@@ -133,11 +160,14 @@ class WeatherService {
     } catch (e) {
       loggerService.e('Error getting weather data', e);
       // General error or connection error to Geocoding API
+      // Set global connection error state
+      hasConnectionError = true;
+      connectionErrorMessage = 'Cannot connect to location service. Check your internet connection.';
       return WeatherResult(
         data: WeatherData.mock(),
         locationFound: false,
         connectionError: true,
-        errorMessage: 'Cannot connect to location service. Check your internet connection.'
+        errorMessage: connectionErrorMessage
       );
     }
   }
@@ -155,6 +185,9 @@ class WeatherService {
         longitude,
         locationName
       );
+      // Clear connection error state on success
+      hasConnectionError = false;
+      connectionErrorMessage = '';
       return WeatherResult(
         data: weatherData,
         locationFound: true,
@@ -162,12 +195,15 @@ class WeatherService {
       );
     } catch (e) {
       loggerService.e('Error getting weather for coordinates', e);
+      // Set global connection error state
+      hasConnectionError = true;
+      connectionErrorMessage = 'Cannot connect to weather service. Check your internet connection.';
       // Return mock data as fallback
       return WeatherResult(
         data: WeatherData.mock(),
         locationFound: true,
         connectionError: true,
-        errorMessage: 'Cannot connect to weather service. Check your internet connection.'
+        errorMessage: connectionErrorMessage
       );
     }
   }

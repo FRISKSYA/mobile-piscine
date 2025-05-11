@@ -68,10 +68,12 @@ class Location {
 class GeocodingResponse {
   final List<Location> results;
   final String? generationTimeMs;
+  final bool connectionError;
 
   GeocodingResponse({
     required this.results,
     this.generationTimeMs,
+    this.connectionError = false,
   });
 
   /// Create a GeocodingResponse from JSON
@@ -84,6 +86,7 @@ class GeocodingResponse {
     return GeocodingResponse(
       results: locations,
       generationTimeMs: json['generationtime_ms']?.toString(),
+      connectionError: false,
     );
   }
 }
