@@ -72,8 +72,8 @@ class HomeController {
       loggerService.i('Loaded default weather data');
     } catch (e) {
       loggerService.e('Error loading default weather data', e);
-      // Fall back to mock data if API fails
-      weatherData = WeatherData.mock();
+      // Return null on error (no fallback)
+      weatherData = null;
     } finally {
       isLoadingWeather = false;
     }
@@ -151,6 +151,15 @@ class HomeController {
     // Reset selected location when using device location
     selectedLocation = null;
 
+    // Check if we encountered a network error during location fetch
+    if (locationManager.currentLocation == 'Network error') {
+      hasError = true;
+      isConnectionError = true;
+      errorMessage = 'Network error. Please check your internet connection and try again.';
+      isLoadingWeather = false;
+      return;
+    }
+
     // Get weather for the current location if permission is granted
     if (!locationManager.locationPermissionDenied && locationManager.isUsingGeolocation) {
       try {
@@ -180,7 +189,7 @@ class HomeController {
         }
       } catch (e) {
         loggerService.e('Error getting weather for current location', e);
-        weatherData = WeatherData.mock();
+        weatherData = null;
 
         hasError = true;
         isConnectionError = true;
@@ -236,7 +245,7 @@ class HomeController {
       }
     } catch (e) {
       loggerService.e('Error getting weather for location ${location.name}', e);
-      weatherData = WeatherData.mock();
+      weatherData = null;
 
       hasError = true;
       isConnectionError = true;
@@ -293,7 +302,7 @@ class HomeController {
       selectedLocation = null;
     } catch (e) {
       loggerService.e('Error getting weather for search query: $location', e);
-      weatherData = WeatherData.mock();
+      weatherData = null;
 
       hasError = true;
       isConnectionError = true;

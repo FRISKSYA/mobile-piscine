@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 
 /// Screen to display weekly forecast
 class WeeklyScreen extends StatelessWidget {
-  final List<DailyForecast> dailyForecasts;
+  final List<DailyForecast>? dailyForecasts;
   final Location? location;
 
   const WeeklyScreen({
@@ -69,17 +69,34 @@ class WeeklyScreen extends StatelessWidget {
   }
 
   Widget _buildDailyForecastList(BuildContext context) {
-    if (dailyForecasts.isEmpty) {
+    if (dailyForecasts == null || dailyForecasts!.isEmpty) {
       return const Center(
-        child: Text('No weekly forecast data available'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.cloud_off,
+              size: 48,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No weekly forecast data available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(8.0),
-      itemCount: dailyForecasts.length,
+      itemCount: dailyForecasts!.length,
       itemBuilder: (context, index) {
-        final forecast = dailyForecasts[index];
+        final forecast = dailyForecasts![index];
         return _buildDailyForecastItem(context, forecast, index);
       },
     );

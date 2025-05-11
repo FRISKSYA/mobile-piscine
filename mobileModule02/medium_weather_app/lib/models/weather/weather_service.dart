@@ -7,13 +7,13 @@ import '../location/geocoding_service.dart';
 
 /// Result class that includes weather data and error information
 class WeatherResult {
-  final WeatherData data;
+  final WeatherData? data;
   final bool locationFound;
   final bool connectionError;
   final String errorMessage;
 
   WeatherResult({
-    required this.data,
+    this.data,
     this.locationFound = true,
     this.connectionError = false,
     this.errorMessage = '',
@@ -40,52 +40,55 @@ class WeatherService {
   ];
 
   /// Get current weather for a location
-  Future<Weather> getCurrentWeather(String locationName) async {
+  Future<Weather?> getCurrentWeather(String locationName) async {
     loggerService.i('Getting current weather for: $locationName');
 
     try {
       final result = await getWeatherData(locationName);
-      return result.data.current;
+      if (result.data == null) return null;
+      return result.data!.current;
     } catch (e) {
       loggerService.e('Error getting current weather', e);
-      // Return mock data as fallback
-      return Weather.mock();
+      // Return null on error
+      return null;
     }
   }
 
   /// Get hourly forecast for today
-  Future<List<HourlyForecast>> getHourlyForecast(String locationName) async {
+  Future<List<HourlyForecast>?> getHourlyForecast(String locationName) async {
     loggerService.i('Getting hourly forecast for: $locationName');
 
     try {
       final result = await getWeatherData(locationName);
+      if (result.data == null || result.data?.hourly == null) return null;
 
       // Filter only today's forecasts
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final tomorrow = today.add(const Duration(days: 1));
 
-      return result.data.hourly.where((forecast) {
+      return result.data!.hourly.where((forecast) {
         return forecast.time.isAfter(now) && forecast.time.isBefore(tomorrow);
       }).toList();
     } catch (e) {
       loggerService.e('Error getting hourly forecast', e);
-      // Return mock data as fallback
-      return List.generate(24, (index) => HourlyForecast.mock(index));
+      // Return null on error
+      return null;
     }
   }
 
   /// Get daily forecast for the week
-  Future<List<DailyForecast>> getDailyForecast(String locationName) async {
+  Future<List<DailyForecast>?> getDailyForecast(String locationName) async {
     loggerService.i('Getting daily forecast for: $locationName');
 
     try {
       final result = await getWeatherData(locationName);
-      return result.data.daily;
+      if (result.data == null || result.data?.daily == null) return null;
+      return result.data!.daily;
     } catch (e) {
       loggerService.e('Error getting daily forecast', e);
-      // Return mock data as fallback
-      return List.generate(7, (index) => DailyForecast.mock(index));
+      // Return null on error
+      return null;
     }
   }
 
@@ -106,7 +109,7 @@ class WeatherService {
             : 'Cannot connect to location service. Check your internet connection.';
 
         return WeatherResult(
-          data: WeatherData.mock(),
+          data: null,
           locationFound: false,
           connectionError: true,
           errorMessage: connectionErrorMessage
@@ -141,7 +144,7 @@ class WeatherService {
           hasConnectionError = true;
           connectionErrorMessage = 'Cannot connect to weather service. Check your internet connection.';
           return WeatherResult(
-            data: WeatherData.mock(),
+            data: null,
             locationFound: true,
             connectionError: true,
             errorMessage: connectionErrorMessage
@@ -152,7 +155,7 @@ class WeatherService {
         // Not a connection error, so don't set the global connection error state
         // City not found error should not persist across screens
         return WeatherResult(
-          data: WeatherData.mock(),
+          data: null,
           locationFound: false,
           errorMessage: 'City "$locationName" not found'
         );
@@ -164,7 +167,7 @@ class WeatherService {
       hasConnectionError = true;
       connectionErrorMessage = 'Cannot connect to location service. Check your internet connection.';
       return WeatherResult(
-        data: WeatherData.mock(),
+        data: null,
         locationFound: false,
         connectionError: true,
         errorMessage: connectionErrorMessage
@@ -198,9 +201,9 @@ class WeatherService {
       // Set global connection error state
       hasConnectionError = true;
       connectionErrorMessage = 'Cannot connect to weather service. Check your internet connection.';
-      // Return mock data as fallback
+      // Return null data on error
       return WeatherResult(
-        data: WeatherData.mock(),
+        data: null,
         locationFound: true,
         connectionError: true,
         errorMessage: connectionErrorMessage
@@ -209,8 +212,8 @@ class WeatherService {
   }
   
   /// Fetch weather data by coordinates
-  Future<WeatherData> _fetchWeatherByCoordinates(
-    double latitude, 
+  Future<WeatherData?> _fetchWeatherByCoordinates(
+    double latitude,
     double longitude,
     String locationName
   ) async {
@@ -225,11 +228,11 @@ class WeatherService {
           'timezone': 'auto',
         },
       );
-      
+
       loggerService.d('Weather API request: $uri');
-      
+
       final response = await http.get(uri);
-      
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         return _parseWeatherData(data, locationName);
@@ -239,9 +242,9 @@ class WeatherService {
       }
     } catch (e) {
       loggerService.e('Exception fetching weather data', e);
-      // Return mock data as fallback
-      loggerService.d('Returning mock weather data bundle as fallback');
-      return WeatherData.mock();
+      // Return null on error
+      loggerService.d('Returning null due to error');
+      return null;
     }
   }
   
@@ -322,12 +325,12 @@ class WeatherService {
   }
 
   /// Parse the API response into WeatherData object
-  WeatherData _parseWeatherData(Map<String, dynamic> data, String locationName) {
+  WeatherData? _parseWeatherData(Map<String, dynamic> data, String locationName) {
     try {
       // Parse current weather
       final currentData = data['current'];
       final currentWeatherCode = currentData['weather_code'];
-      
+
       final Weather currentWeather = Weather(
         temperature: currentData['temperature_2m']?.toDouble() ?? 0.0,
         condition: _getWeatherCondition(currentWeatherCode),
@@ -338,7 +341,7 @@ class WeatherService {
         time: DateTime.parse(currentData['time']),
         location: locationName,
       );
-      
+
       // Parse hourly forecast
       final List<HourlyForecast> hourlyForecasts = [];
       final hourlyTimes = data['hourly']['time'] as List;
@@ -354,14 +357,14 @@ class WeatherService {
           windSpeed: data['hourly']['wind_speed_10m']?[i]?.toDouble() ?? 0.0,
         ));
       }
-      
+
       // Parse daily forecast
       final List<DailyForecast> dailyForecasts = [];
       final dailyTimes = data['daily']['time'] as List;
-      
+
       for (int i = 0; i < dailyTimes.length; i++) {
         final weatherCode = data['daily']['weather_code'][i];
-        
+
         dailyForecasts.add(DailyForecast(
           date: DateTime.parse(dailyTimes[i]),
           minTemp: data['daily']['temperature_2m_min'][i]?.toDouble() ?? 0.0,
@@ -372,7 +375,7 @@ class WeatherService {
           windSpeed: 0.0, // Not available in daily data
         ));
       }
-      
+
       return WeatherData(
         current: currentWeather,
         hourly: hourlyForecasts,
@@ -380,8 +383,8 @@ class WeatherService {
       );
     } catch (e) {
       loggerService.e('Error parsing weather data', e);
-      // Return mock data as fallback
-      return WeatherData.mock();
+      // Return null on error
+      return null;
     }
   }
 }

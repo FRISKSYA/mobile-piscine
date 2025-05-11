@@ -27,6 +27,16 @@ class LocationManager {
 
   // Get current location
   Future<void> getCurrentLocation(BuildContext context) async {
+    // Check if already loading location to prevent multiple requests
+    if (isLoadingLocation) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location request already in progress, please wait...')),
+        );
+      }
+      return;
+    }
+
     // Show loading state
     isLoadingLocation = true;
     isUsingGeolocation = true;
@@ -78,13 +88,54 @@ class LocationManager {
     } catch (e) {
       isLoadingLocation = false;
       coordinatesText = '';
-      currentLocation = 'Error getting location';
 
-      // Show error message only if context is still mounted
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error getting location: ${e.toString()}')),
-        );
+      // Check for common error types and provide more user-friendly messages
+      if (e.toString().contains('Permission')) {
+        currentLocation = 'Location permission denied';
+        locationPermissionDenied = true;
+
+        // Show permission error message
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location permission denied. Please enable it in app settings.'),
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      } else if (e.toString().contains('location service is disabled') ||
+                e.toString().contains('services are disabled')) {
+        currentLocation = 'Location services disabled';
+
+        // Show location services disabled message
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location services are disabled. Please enable location in your device settings.'),
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      } else if (e.toString().contains('already running')) {
+        currentLocation = 'Location request in progress';
+
+        // Already showing message in the guard clause, no need to show again
+      } else {
+        // Set a more informative message for network errors
+        currentLocation = 'Network error';
+
+        // Log the detailed error
+        loggerService.e('Error getting location', e);
+
+        // Show a more user-friendly message
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Network error. Please check your internet connection and try again.'),
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
       }
     }
   }

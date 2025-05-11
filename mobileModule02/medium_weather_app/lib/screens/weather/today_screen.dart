@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 
 /// Screen to display today's hourly forecast
 class TodayScreen extends StatelessWidget {
-  final List<HourlyForecast> hourlyForecasts;
+  final List<HourlyForecast>? hourlyForecasts;
   final Location? location;
 
   const TodayScreen({
@@ -69,17 +69,34 @@ class TodayScreen extends StatelessWidget {
   }
 
   Widget _buildHourlyForecastList(BuildContext context) {
-    if (hourlyForecasts.isEmpty) {
+    if (hourlyForecasts == null || hourlyForecasts!.isEmpty) {
       return const Center(
-        child: Text('No hourly forecast data available'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.cloud_off,
+              size: 48,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No hourly forecast data available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(8.0),
-      itemCount: hourlyForecasts.length,
+      itemCount: hourlyForecasts!.length,
       itemBuilder: (context, index) {
-        final forecast = hourlyForecasts[index];
+        final forecast = hourlyForecasts![index];
         return _buildHourlyForecastItem(context, forecast);
       },
     );
