@@ -46,7 +46,8 @@ class LocationSearchResults extends StatelessWidget {
           child: ListView.builder(
             padding: EdgeInsets.zero,
             shrinkWrap: true,
-            itemCount: locations.length,
+            // Limit to maximum 5 items
+            itemCount: locations.length > 5 ? 5 : locations.length,
             itemBuilder: (context, index) {
               return _buildLocationItem(context, locations[index]);
             },

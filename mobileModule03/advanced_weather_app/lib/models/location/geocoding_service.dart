@@ -20,7 +20,7 @@ class GeocodingService {
   static Future<GeocodingResponse> searchLocation({
     required String query,
     String language = 'en',
-    int limit = 10,
+    int limit = 5,
   }) async {
     if (query.isEmpty) {
       return GeocodingResponse(results: []);
