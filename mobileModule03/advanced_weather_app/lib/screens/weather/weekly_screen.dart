@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/forecast/forecast.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../core/theme/app_theme.dart';
 import '../../models/location/location.dart';
 import 'package:intl/intl.dart';
+import './weekly_forecast_chart.dart';
 
 /// Screen to display weekly forecast
 class WeeklyScreen extends StatelessWidget {
@@ -22,6 +23,10 @@ class WeeklyScreen extends StatelessWidget {
       children: [
         // Location header
         _buildLocationHeader(context),
+
+        // Temperature chart
+        if (dailyForecasts != null && dailyForecasts!.isNotEmpty)
+          _buildTemperatureChart(context),
 
         // Daily forecast list
         Expanded(
@@ -76,26 +81,104 @@ class WeeklyScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTemperatureChart(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Card(
+        elevation: 3,
+        color: Color.fromRGBO(255, 255, 255, 0.85), // Semi-transparent card
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Temperature Forecast',
+                style: TextStyle(
+                  fontSize: AppTheme.getResponsiveFontSize(context, 0.05, maxSize: 18),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 200,
+                child: WeeklyForecastChart(
+                  dailyForecasts: dailyForecasts!,
+                  minColor: Colors.blue,
+                  maxColor: Colors.red,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildLegendItem('Max Temp', Colors.red),
+                  const SizedBox(width: 24),
+                  _buildLegendItem('Min Temp', Colors.blue),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 16,
+          height: 4,
+          color: color,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDailyForecastList(BuildContext context) {
     if (dailyForecasts == null || dailyForecasts!.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.cloud_off,
-              size: 48,
-              color: Colors.grey,
+      return Center(
+        child: Card(
+          elevation: 3,
+          color: Color.fromRGBO(255, 255, 255, 0.85), // Semi-transparent card
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.cloud_off,
+                  size: 48,
+                  color: Colors.grey,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No weekly forecast data available',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
-            Text(
-              'No weekly forecast data available',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
