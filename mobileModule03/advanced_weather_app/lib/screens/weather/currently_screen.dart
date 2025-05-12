@@ -42,30 +42,49 @@ class CurrentlyScreen extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            locationDisplay,
-            style: TextStyle(
-              fontSize: AppTheme.getResponsiveFontSize(context, 0.07, maxSize: 28),
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+          Icon(
+            Icons.location_on,
+            size: 28,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  locationDisplay,
+                  style: TextStyle(
+                    fontSize: AppTheme.getResponsiveFontSize(context, 0.07, maxSize: 28),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (location != null)
+                  Text(
+                    location!.locationDescription,
+                    style: TextStyle(
+                      fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 18),
+                      color: Colors.black54,
+                    ),
+                  ),
+              ],
             ),
           ),
-          if (location != null)
-            Text(
-              location!.locationDescription,
-              style: TextStyle(
-                fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 18),
-                color: Colors.black54,
-              ),
-            ),
         ],
       ),
     );
@@ -86,24 +105,41 @@ class CurrentlyScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Current Conditions',
-                      style: TextStyle(
-                        fontSize: AppTheme.getResponsiveFontSize(context, 0.05, maxSize: 20),
-                        fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Row(
+                    children: [
+                      // Weather icon
+                      Icon(
+                        _getWeatherIcon(weather.condition),
+                        size: 48,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      weather.condition,
-                      style: TextStyle(
-                        fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 18),
+                      const SizedBox(width: 12),
+                      // Weather condition text
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Current Conditions',
+                              style: TextStyle(
+                                fontSize: AppTheme.getResponsiveFontSize(context, 0.05, maxSize: 20),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              weather.condition,
+                              style: TextStyle(
+                                fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 18),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 _buildTemperature(context),
               ],
@@ -117,12 +153,19 @@ class CurrentlyScreen extends StatelessWidget {
   }
 
   Widget _buildTemperature(BuildContext context) {
-    return Text(
-      '${weather.temperature.toStringAsFixed(1)}°C',
-      style: TextStyle(
-        fontSize: AppTheme.getResponsiveFontSize(context, 0.09, maxSize: 38),
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        '${weather.temperature.toStringAsFixed(1)}°C',
+        style: TextStyle(
+          fontSize: AppTheme.getResponsiveFontSize(context, 0.09, maxSize: 38),
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }
@@ -130,13 +173,46 @@ class CurrentlyScreen extends StatelessWidget {
   Widget _buildWeatherDetails(BuildContext context) {
     return Column(
       children: [
-        _buildDetailRow(
-          context,
-          'Wind',
-          '${weather.windSpeed.toStringAsFixed(1)} km/h',
-          Icons.air,
+        // Wind speed highlighted with a special container
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.air,
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Wind Speed',
+                    style: TextStyle(
+                      fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${weather.windSpeed.toStringAsFixed(1)} km/h',
+                    style: TextStyle(
+                      fontSize: AppTheme.getResponsiveFontSize(context, 0.05, maxSize: 20),
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
+        // Other weather details
         _buildDetailRow(
           context,
           'Humidity',
@@ -179,5 +255,28 @@ class CurrentlyScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Returns the appropriate icon for the weather condition
+  IconData _getWeatherIcon(String condition) {
+    condition = condition.toLowerCase();
+
+    if (condition.contains('sun') || condition.contains('clear')) {
+      return Icons.wb_sunny;
+    } else if (condition.contains('part') && condition.contains('cloud')) {
+      return Icons.wb_cloudy;
+    } else if (condition.contains('cloud')) {
+      return Icons.cloud;
+    } else if (condition.contains('rain')) {
+      return Icons.grain;
+    } else if (condition.contains('snow')) {
+      return Icons.ac_unit;
+    } else if (condition.contains('thunder') || condition.contains('storm')) {
+      return Icons.flash_on;
+    } else if (condition.contains('fog') || condition.contains('mist')) {
+      return Icons.cloud_queue;
+    } else {
+      return Icons.cloud; // Default icon
+    }
   }
 }
