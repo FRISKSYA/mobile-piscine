@@ -44,11 +44,11 @@ class CurrentlyScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: Color.fromRGBO(255, 255, 255, 0.8),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Color.fromRGBO(0, 0, 0, 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -93,7 +93,7 @@ class CurrentlyScreen extends StatelessWidget {
   Widget _buildWeatherSection(BuildContext context) {
     return Card(
       elevation: 3,
-      color: Colors.white.withOpacity(0.85), // Semi-transparent card
+      color: Color.fromRGBO(255, 255, 255, 0.85), // Semi-transparent card
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -156,7 +156,7 @@ class CurrentlyScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        color: Theme.of(context).colorScheme.primary.withAlpha(25),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -177,7 +177,7 @@ class CurrentlyScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.primary.withAlpha(25),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(

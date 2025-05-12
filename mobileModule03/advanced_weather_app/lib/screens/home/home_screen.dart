@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     return Scaffold(
       backgroundColor: Colors.transparent, // Make scaffold transparent to show background
       appBar: AppBar(
-        backgroundColor: Colors.white.withOpacity(0.8), // Semi-transparent app bar
+        backgroundColor: Color.fromRGBO(255, 255, 255, 0.8), // Semi-transparent app bar
         elevation: 0,
         title: AppSearchBar(
           controller: _controller.searchController,
@@ -112,10 +112,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8), // Semi-transparent background
+          color: Color.fromRGBO(255, 255, 255, 0.8), // Semi-transparent background
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 5,
               spreadRadius: 1,
             ),

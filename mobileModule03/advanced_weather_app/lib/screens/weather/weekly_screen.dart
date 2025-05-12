@@ -39,7 +39,7 @@ class WeeklyScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.7),
+          color: Color.fromRGBO(255, 255, 255, 0.7),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -116,7 +116,7 @@ class WeeklyScreen extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-      color: Colors.white.withOpacity(0.85), // Semi-transparent card
+      color: Color.fromRGBO(255, 255, 255, 0.85), // Semi-transparent card
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
