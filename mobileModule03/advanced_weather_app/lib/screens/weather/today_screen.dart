@@ -46,11 +46,11 @@ class TodayScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withAlpha((0.8 * 255).round()),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withAlpha((0.05 * 255).round()),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -85,7 +85,7 @@ class TodayScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.secondary.withOpacity(0.15),
+                          color: Theme.of(context).colorScheme.secondary.withAlpha((0.15 * 255).round()),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -111,10 +111,10 @@ class TodayScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      color: Theme.of(context).colorScheme.primary.withAlpha((0.1 * 255).round()),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                        color: Theme.of(context).colorScheme.primary.withAlpha((0.2 * 255).round()),
                       ),
                     ),
                     child: Text(
@@ -177,8 +177,8 @@ class TodayScreen extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       color: isCurrent
-          ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
-          : Colors.white.withOpacity(0.85),
+          ? Theme.of(context).colorScheme.primary.withAlpha((0.15 * 255).round())
+          : Colors.white.withAlpha((0.85 * 255).round()),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: isCurrent
@@ -195,7 +195,7 @@ class TodayScreen extends StatelessWidget {
               width: 60,
               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.secondary.withAlpha((0.1 * 255).round()),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -233,7 +233,7 @@ class TodayScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withAlpha((0.5 * 255).round()),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -287,8 +287,8 @@ class TodayScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
               decoration: BoxDecoration(
                 color: isCurrent
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
-                    : Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    ? Theme.of(context).colorScheme.primary.withAlpha((0.2 * 255).round())
+                    : Theme.of(context).colorScheme.primary.withAlpha((0.1 * 255).round()),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -349,11 +349,11 @@ class TodayScreen extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       height: 200,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white.withAlpha((0.8 * 255).round()),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha((0.05 * 255).round()),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -385,13 +385,13 @@ class TodayScreen extends StatelessWidget {
                   verticalInterval: 4,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.grey.withOpacity(0.3),
+                      color: Colors.grey.withAlpha((0.3 * 255).round()),
                       strokeWidth: 1,
                     );
                   },
                   getDrawingVerticalLine: (value) {
                     return FlLine(
-                      color: Colors.grey.withOpacity(0.3),
+                      color: Colors.grey.withAlpha((0.3 * 255).round()),
                       strokeWidth: 1,
                     );
                   },
@@ -443,7 +443,7 @@ class TodayScreen extends StatelessWidget {
                 borderData: FlBorderData(
                   show: true,
                   border: Border.all(
-                    color: Colors.grey.withOpacity(0.3),
+                    color: Colors.grey.withAlpha((0.3 * 255).round()),
                   ),
                 ),
                 minX: 0,
@@ -472,7 +472,7 @@ class TodayScreen extends StatelessWidget {
                     ),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                      color: Theme.of(context).colorScheme.primary.withAlpha((0.2 * 255).round()),
                     ),
                   ),
                 ],
