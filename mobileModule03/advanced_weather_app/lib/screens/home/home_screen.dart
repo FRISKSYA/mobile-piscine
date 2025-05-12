@@ -3,7 +3,8 @@ import 'home_controller.dart';
 import '../weather/tab_content_builder.dart';
 import '../../core/widgets/app_search_bar.dart';
 import '../../core/widgets/app_tab_bar.dart';
-import '../location/location_search_results.dart';
+import '../../core/widgets/error_banner.dart';
+import '../search/search_results_container.dart';
 
 /// Main home screen with tabs
 class HomePage extends StatefulWidget {
@@ -59,7 +60,29 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               top: 0,
               left: 0,
               right: 0,
-              child: _buildErrorBanner(context),
+              child: ErrorBanner(
+                errorMessage: _controller.errorMessage,
+                isLocationError: _controller.isLocationNotFound,
+                isConnectionError: _controller.isConnectionError,
+                onRetry: _controller.isConnectionError
+                    ? () {
+                        // Retry the last action based on the current location
+                        if (_controller.locationManager.isUsingGeolocation) {
+                          _onLocationPressed(context);
+                        } else if (_controller.selectedLocation != null) {
+                          _onLocationSelected(_controller.selectedLocation!, context);
+                        } else {
+                          // Retry with the current location name
+                          _controller.onSearchSubmitted(_controller.locationManager.currentLocation, context);
+                          setState(() {});
+                        }
+                      }
+                    : null,
+                onClose: () {
+                  _controller.clearError();
+                  setState(() {});
+                },
+              ),
             ),
 
           SafeArea(
@@ -89,24 +112,23 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
           if (_controller.searchManager.showSearchResults &&
               (_controller.searchManager.searchResults.isNotEmpty || _controller.searchManager.isSearching))
-            Positioned(
-              top: _controller.hasError ? 48 : 0, // Adjust position based on error banner
-              left: 8,
-              right: 8,
-              child: SafeArea(
-                child: Column(
-                  children: [
-                    // Show connection error above search results if needed
-                    if (_controller.isConnectionError && !_controller.hasError)
-                      _buildErrorBanner(context),
-                    LocationSearchResults(
-                      locations: _controller.searchManager.searchResults,
-                      onLocationSelected: (location) => _onLocationSelected(location, context),
-                      isLoading: _controller.searchManager.isSearching,
-                    ),
-                  ],
-                ),
-              ),
+            SearchResultsContainer(
+              locations: _controller.searchManager.searchResults,
+              onLocationSelected: (location) => _onLocationSelected(location, context),
+              isSearching: _controller.searchManager.isSearching,
+              isConnectionError: _controller.isConnectionError && !_controller.hasError,
+              errorMessage: _controller.errorMessage,
+              hasErrorAbove: _controller.hasError,
+              onRetry: () {
+                if (_controller.locationManager.isUsingGeolocation) {
+                  _onLocationPressed(context);
+                } else if (_controller.selectedLocation != null) {
+                  _onLocationSelected(_controller.selectedLocation!, context);
+                } else {
+                  _controller.onSearchSubmitted(_controller.locationManager.currentLocation, context);
+                  setState(() {});
+                }
+              },
             ),
         ],
       ),
@@ -144,77 +166,4 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     setState(() {});
   }
 
-  // Build an error banner for persistent error messages
-  Widget _buildErrorBanner(BuildContext context) {
-    final bool isLocationError = _controller.isLocationNotFound;
-    final bool isConnectionError = _controller.isConnectionError;
-
-    // Determine banner color and icon based on error type
-    final Color bannerColor = isLocationError ? Colors.orange : Colors.red.shade700;
-    final IconData iconData = isLocationError ? Icons.location_off : Icons.signal_wifi_off;
-
-    // Use different styling for temporary vs persistent errors
-    final TextStyle textStyle = TextStyle(
-      color: Colors.white,
-      fontSize: 14,
-      fontWeight: isConnectionError ? FontWeight.bold : FontWeight.normal,
-    );
-
-    return Material(
-      elevation: 4,
-      child: Container(
-        color: bannerColor,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: SafeArea(
-          bottom: false,
-          child: Row(
-            children: [
-              Icon(
-                iconData,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  _controller.errorMessage,
-                  style: textStyle,
-                ),
-              ),
-              if (isConnectionError)
-                TextButton(
-                  onPressed: () {
-                    // Retry the last action based on the current location
-                    if (_controller.locationManager.isUsingGeolocation) {
-                      _onLocationPressed(context);
-                    } else if (_controller.selectedLocation != null) {
-                      _onLocationSelected(_controller.selectedLocation!, context);
-                    } else {
-                      // Retry with the current location name
-                      _controller.onSearchSubmitted(_controller.locationManager.currentLocation, context);
-                      setState(() {});
-                    }
-                  },
-                  child: const Text(
-                    'Retry',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )
-              else
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                  onPressed: () {
-                    _controller.clearError();
-                    setState(() {});
-                  },
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
