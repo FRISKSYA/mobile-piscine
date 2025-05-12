@@ -35,7 +35,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _controller.checkConnectionState();
 
     return Scaffold(
+      backgroundColor: Colors.transparent, // Make scaffold transparent to show background
       appBar: AppBar(
+        backgroundColor: Colors.white.withOpacity(0.8), // Semi-transparent app bar
+        elevation: 0,
         title: AppSearchBar(
           controller: _controller.searchController,
           onLocationPressed: () => _onLocationPressed(context),
@@ -107,7 +110,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ),
         ],
       ),
-      bottomNavigationBar: AppTabBar(controller: _controller.tabController),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.8), // Semi-transparent background
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: AppTabBar(controller: _controller.tabController),
+      ),
     );
   }
 

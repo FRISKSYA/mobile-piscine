@@ -41,31 +41,43 @@ class CurrentlyScreen extends StatelessWidget {
       locationDisplay = weather.location;
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          locationDisplay,
-          style: TextStyle(
-            fontSize: AppTheme.getResponsiveFontSize(context, 0.07, maxSize: 28),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        if (location != null)
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            location!.locationDescription,
+            locationDisplay,
             style: TextStyle(
-              fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 18),
-              color: Colors.grey[700],
+              fontSize: AppTheme.getResponsiveFontSize(context, 0.07, maxSize: 28),
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
-      ],
+          if (location != null)
+            Text(
+              location!.locationDescription,
+              style: TextStyle(
+                fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 18),
+                color: Colors.black54,
+              ),
+            ),
+        ],
+      ),
     );
   }
 
   Widget _buildWeatherSection(BuildContext context) {
     return Card(
       elevation: 3,
+      color: Colors.white.withOpacity(0.85), // Semi-transparent card
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

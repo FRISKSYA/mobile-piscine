@@ -36,34 +36,42 @@ class TodayScreen extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            locationDisplay,
-            style: TextStyle(
-              fontSize: AppTheme.getResponsiveFontSize(context, 0.06, maxSize: 24),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (location != null)
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
-              location!.locationDescription,
+              locationDisplay,
               style: TextStyle(
-                fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
-                color: Colors.grey[700],
+                fontSize: AppTheme.getResponsiveFontSize(context, 0.06, maxSize: 24),
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
-          const SizedBox(height: 8),
-          Text(
-            'Hourly Forecast',
-            style: TextStyle(
-              fontSize: AppTheme.getResponsiveFontSize(context, 0.05, maxSize: 20),
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.secondary,
+            if (location != null)
+              Text(
+                location!.locationDescription,
+                style: TextStyle(
+                  fontSize: AppTheme.getResponsiveFontSize(context, 0.04, maxSize: 16),
+                  color: Colors.black54,
+                ),
+              ),
+            const SizedBox(height: 8),
+            Text(
+              'Hourly Forecast',
+              style: TextStyle(
+                fontSize: AppTheme.getResponsiveFontSize(context, 0.05, maxSize: 20),
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -107,6 +115,10 @@ class TodayScreen extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      color: Colors.white.withOpacity(0.85), // Semi-transparent card
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
