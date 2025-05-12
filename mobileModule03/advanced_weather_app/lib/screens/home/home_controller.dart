@@ -58,8 +58,23 @@ class HomeController {
     // Add listener to search controller
     searchController.addListener(_onSearchChanged);
 
-    // Check for location permission on startup
-    locationManager.checkLocationPermission();
+    // Request location permission on startup
+    _requestLocationPermissionOnStartup();
+  }
+
+  // Request location permission on app startup
+  Future<void> _requestLocationPermissionOnStartup() async {
+    try {
+      // First check current permission status
+      bool hasPermission = await locationManager.checkLocationPermission();
+
+      // If permission is not granted, request it
+      if (!hasPermission) {
+        await locationManager.requestLocationPermission();
+      }
+    } catch (e) {
+      loggerService.e('Error requesting location permission on startup', e);
+    }
   }
 
   // Load default weather data for initial display

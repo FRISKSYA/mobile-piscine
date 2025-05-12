@@ -5,7 +5,7 @@ import '../../core/utils/logger_service.dart';
 
 class LocationManager {
   final LocationService _locationService = LocationService();
-  
+
   // Location state
   String currentLocation = '';
   bool isUsingGeolocation = false;
@@ -21,6 +21,16 @@ class LocationManager {
       return hasPermission;
     } catch (e) {
       loggerService.e('Error checking location permission: $e');
+      return false;
+    }
+  }
+
+  // Request location permission
+  Future<bool> requestLocationPermission() async {
+    try {
+      return await _locationService.requestLocationPermission();
+    } catch (e) {
+      loggerService.e('Error requesting location permission: $e');
       return false;
     }
   }
