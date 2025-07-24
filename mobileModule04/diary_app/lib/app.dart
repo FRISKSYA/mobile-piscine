@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'core/widgets/loading_widget.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/diary/presentation/pages/create_diary_entry_page.dart';
+import 'features/diary/presentation/pages/diary_entry_page.dart';
+import 'features/diary/presentation/pages/profile_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -34,10 +36,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const Scaffold(
-          body: Center(
-            child: Text('Profile Page - To be implemented'),
-          ),
+        builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/diary/create',
+        builder: (context, state) => const CreateDiaryEntryPage(),
+      ),
+      GoRoute(
+        path: '/diary/:id',
+        builder: (context, state) => DiaryEntryPage(
+          entryId: state.pathParameters['id']!,
         ),
       ),
     ],
