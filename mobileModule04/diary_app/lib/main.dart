@@ -6,8 +6,8 @@ import 'package:diary_app/pages/login_page.dart';
 
 Future<void> main() async {
   await Supabase.initialize(
-    url: 'https://qocvdghaezxahqwgqjhv.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvY3ZkZ2hhZXp4YWhxd2dxamh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDM2MzMsImV4cCI6MjA2OTE3OTYzM30.XNhdBs-1jOqok9Ekcz5t4RVhFlYJbyeEoUwBQol5x1M',
+    url: 'https://cgvkbcgbijzybpdewtru.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNndmtiY2diaWp6eWJwZGV3dHJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMTY4MzEsImV4cCI6MjA4ODY5MjgzMX0.1FG6dBRnL8fjEUMwfMpipUYtZBBEQHTpaGQ_aLMaOmA',
   );
   runApp(const MyApp());
 }
