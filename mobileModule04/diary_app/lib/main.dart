@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:diary_app/pages/account_page.dart';
+import 'package:diary_app/pages/diary_list_page.dart';
 import 'package:diary_app/pages/login_page.dart';
 
 
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
       ),
       home: supabase.auth.currentSession == null
           ? const LoginPage()
-          : const AccountPage(),
+          : const DiaryListPage(),
     );
   }
 }

@@ -1,11 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:diary_app/main.dart';
-import 'package:diary_app/pages/account_page.dart';
-
+import 'package:diary_app/pages/diary_list_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,55 +13,40 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _isLoading = false;
   bool _redirecting = false;
-  late final TextEditingController _emailController = TextEditingController();
   late final StreamSubscription<AuthState> _authStateSubscription;
 
-  Future<void> _signIn() async {
+  Future<void> _signInWithOAuth(OAuthProvider provider) async {
     try {
-      setState(() {
-        _isLoading = true;
-      });
-      await supabase.auth.signInWithOtp(
-        email: _emailController.text.trim(),
-        emailRedirectTo:
-            kIsWeb ? null : 'io.supabase.flutterquickstart://login-callback/',
+      await supabase.auth.signInWithOAuth(
+        provider,
+        redirectTo: 'io.supabase.flutterquickstart://login-callback/',
       );
-      if (mounted) {
-        context.showSnackBar('Check your email for a login link!');
-
-        _emailController.clear();
-      }
     } on AuthException catch (error) {
-      if (mounted) context.showSnackBar(error.message, isError: true);
+      if (!mounted) return;
+      context.showSnackBar(error.message, isError: true);
     } catch (error) {
-      if (mounted) {
-        context.showSnackBar('Unexpected error occurred', isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      context.showSnackBar('Unexpected error occurred', isError: true);
     }
   }
 
   @override
   void initState() {
+    super.initState();
     _authStateSubscription = supabase.auth.onAuthStateChange.listen(
       (data) {
         if (_redirecting) return;
         final session = data.session;
-        if (session != null) {
+        if (session != null && mounted) {
           _redirecting = true;
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const AccountPage()),
+            MaterialPageRoute(builder: (context) => const DiaryListPage()),
           );
         }
       },
       onError: (error) {
+        if (!mounted) return;
         if (error is AuthException) {
           context.showSnackBar(error.message, isError: true);
         } else {
@@ -71,12 +54,10 @@ class _LoginPageState extends State<LoginPage> {
         }
       },
     );
-    super.initState();
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
     _authStateSubscription.cancel();
     super.dispose();
   }
@@ -88,16 +69,23 @@ class _LoginPageState extends State<LoginPage> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
         children: [
-          const Text('Sign in via the magic link with your email below'),
-          const SizedBox(height: 18),
-          TextFormField(
-            controller: _emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+          const SizedBox(height: 24),
+          const Text(
+            'Welcome to your Diary',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: _isLoading ? null : _signIn,
-            child: Text(_isLoading ? 'Sending...' : 'Send Magic Link'),
+          const SizedBox(height: 48),
+          ElevatedButton.icon(
+            onPressed: () => _signInWithOAuth(OAuthProvider.google),
+            icon: const Icon(Icons.login),
+            label: const Text('Continue with Google'),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => _signInWithOAuth(OAuthProvider.github),
+            icon: const Icon(Icons.code),
+            label: const Text('Continue with GitHub'),
           ),
         ],
       ),
